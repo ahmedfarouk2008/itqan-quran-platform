@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { BookOpen, Eye, EyeOff, ChevronLeft } from 'lucide-react';
-import { UserRole } from '../../types';
 import '../../styles/pages/auth.css';
 
 // ==============================================

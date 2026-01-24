@@ -61,7 +61,7 @@ const mockSessions: Session[] = [
     },
 ];
 
-const SessionsPage: React.FC<SessionsPageProps> = ({ onNavigate }) => {
+const SessionsPage: React.FC<SessionsPageProps> = () => {
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
     const [showBookingModal, setShowBookingModal] = useState(false);
 

@@ -6,7 +6,6 @@ import {
     GraduationCap,
     ClipboardCheck,
     MessageSquare,
-    User,
     LogOut,
     Menu,
     X

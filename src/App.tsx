@@ -29,7 +29,7 @@ type AppView =
     | 'app';
 
 const AppContent: React.FC = () => {
-    const { user, profile, isLoading, isAuthenticated, signIn, signUp, signOut, completeOnboarding } = useAuth();
+    const { profile, isLoading, isAuthenticated, signIn, signUp, signOut, completeOnboarding } = useAuth();
     const { success, error: showError } = useToast();
     const [currentView, setCurrentView] = useState<AppView>('landing');
     const [selectedRole, setSelectedRole] = useState<'student' | 'teacher'>('student');

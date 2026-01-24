@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  BookOpen, 
-  Mic, 
+import {
+  BookOpen,
+  Mic,
   Volume2,
   ChevronLeft,
-  ChevronRight,
   Check,
   X,
   Play,
@@ -64,9 +63,8 @@ const tafseerLessons = [
   { id: 4, surah: 'الملك', title: 'تفسير الآيات 11-15', completed: false },
 ];
 
-const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
+const LearningPage: React.FC<LearningPageProps> = () => {
   const [activeTab, setActiveTab] = useState<LearningTab>('hifz');
-  const [isRecording, setIsRecording] = useState(false);
   const [showRecordingModal, setShowRecordingModal] = useState(false);
 
   const tabs = [
@@ -100,8 +98,8 @@ const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
       {/* Content based on active tab */}
       <div className="learning-content">
         {activeTab === 'hifz' && (
-          <HifzContent 
-            data={mockMemorizationData} 
+          <HifzContent
+            data={mockMemorizationData}
             onRecordClick={() => setShowRecordingModal(true)}
           />
         )}
@@ -111,7 +109,7 @@ const LearningPage: React.FC<LearningPageProps> = ({ onNavigate }) => {
 
       {/* Recording Modal */}
       {showRecordingModal && (
-        <RecordingModal 
+        <RecordingModal
           surah={mockMemorizationData.currentSurah}
           ayahs={mockMemorizationData.currentTarget}
           onClose={() => setShowRecordingModal(false)}
@@ -182,8 +180,8 @@ const HifzContent: React.FC<HifzContentProps> = ({ data, onRecordClick }) => {
         <div className="card-body">
           <div className="checkpoints-grid">
             {data.checkpoints.map((cp, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`checkpoint ${cp.completed ? 'completed' : ''}`}
               >
                 <div className="checkpoint-icon">
@@ -364,7 +362,7 @@ const RecordingModal: React.FC<RecordingModalProps> = ({ surah, ayahs, onClose }
                 </div>
                 <div className="recording-time">{formatTime(recordingTime)}</div>
                 {!isRecording ? (
-                  <button 
+                  <button
                     className="btn btn-primary btn-lg"
                     onClick={handleStartRecording}
                   >
@@ -372,7 +370,7 @@ const RecordingModal: React.FC<RecordingModalProps> = ({ surah, ayahs, onClose }
                     <span>ابدأ التسجيل</span>
                   </button>
                 ) : (
-                  <button 
+                  <button
                     className="btn btn-secondary btn-lg"
                     onClick={handleStopRecording}
                   >
@@ -395,7 +393,7 @@ const RecordingModal: React.FC<RecordingModalProps> = ({ surah, ayahs, onClose }
                   </div>
                 </div>
                 <div className="recording-actions">
-                  <button 
+                  <button
                     className="btn btn-secondary"
                     onClick={() => {
                       setHasRecording(false);
@@ -404,7 +402,7 @@ const RecordingModal: React.FC<RecordingModalProps> = ({ surah, ayahs, onClose }
                   >
                     إعادة التسجيل
                   </button>
-                  <button 
+                  <button
                     className="btn btn-primary"
                     onClick={handleSubmit}
                   >

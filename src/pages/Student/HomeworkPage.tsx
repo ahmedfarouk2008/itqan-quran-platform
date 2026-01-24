@@ -5,7 +5,6 @@ import {
     Calendar,
     CheckCircle,
     AlertCircle,
-    ChevronLeft,
     Mic,
     Play,
     Pause,
@@ -88,7 +87,7 @@ const mockHomework = [
 
 type HomeworkTab = 'pending' | 'submitted' | 'reviewed';
 
-const HomeworkPage: React.FC<HomeworkPageProps> = ({ onNavigate }) => {
+const HomeworkPage: React.FC<HomeworkPageProps> = () => {
     const [activeTab, setActiveTab] = useState<HomeworkTab>('pending');
     const [selectedHomework, setSelectedHomework] = useState<typeof mockHomework[0] | null>(null);
     const [showSubmitModal, setShowSubmitModal] = useState(false);

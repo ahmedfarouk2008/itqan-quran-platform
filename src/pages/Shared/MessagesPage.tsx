@@ -63,7 +63,7 @@ const mockMessages: Record<string, Array<{
     ],
 };
 
-const MessagesPage: React.FC<MessagesPageProps> = ({ onNavigate }) => {
+const MessagesPage: React.FC<MessagesPageProps> = () => {
     const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
     const [messageInput, setMessageInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');

@@ -9,6 +9,9 @@ import SignupPage from './pages/Auth/SignupPage';
 import OnboardingPage from './pages/Auth/OnboardingPage';
 import StudentDashboard from './pages/Student/StudentDashboard';
 import SessionsPage from './pages/Student/SessionsPage';
+import LearningPage from './pages/Student/LearningPage';
+import HomeworkPage from './pages/Student/HomeworkPage';
+import MessagesPage from './pages/Shared/MessagesPage';
 import AppLayout from './components/Layout/AppLayout';
 
 // Styles
@@ -189,11 +192,11 @@ const AppContent: React.FC = () => {
             case 'sessions':
                 return <SessionsPage onNavigate={setActiveTab} />;
             case 'learning':
-                return <PlaceholderPage title="التعلّم" description="صفحة الحفظ والتجويد والتفسير قيد الإنشاء" />;
+                return <LearningPage onNavigate={setActiveTab} />;
             case 'homework':
-                return <PlaceholderPage title="الواجب" description="صفحة الواجبات قيد الإنشاء" />;
+                return <HomeworkPage onNavigate={setActiveTab} />;
             case 'messages':
-                return <PlaceholderPage title="الرسائل" description="صفحة الرسائل قيد الإنشاء" />;
+                return <MessagesPage onNavigate={setActiveTab} />;
             default:
                 return <StudentDashboard user={layoutUser} onNavigate={setActiveTab} />;
         }
@@ -211,7 +214,7 @@ const AppContent: React.FC = () => {
             case 'homework':
                 return <PlaceholderPage title="الواجبات" description="إدارة الواجبات قيد الإنشاء" />;
             case 'messages':
-                return <PlaceholderPage title="الرسائل" description="صفحة الرسائل قيد الإنشاء" />;
+                return <MessagesPage onNavigate={setActiveTab} />;
             default:
                 return <PlaceholderPage title="لوحة التحكم" description="لوحة تحكم المعلمة قيد الإنشاء" />;
         }

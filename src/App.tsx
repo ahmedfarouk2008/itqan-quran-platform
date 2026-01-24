@@ -63,10 +63,10 @@ const AppContent: React.FC = () => {
     };
 
     // Handle signup
-    const handleSignup = async (data: { name: string; email?: string; phone?: string; password: string; role: 'student' | 'teacher' }) => {
+    const handleSignup = async (data: { name: string; username: string; phone?: string; password: string; role: 'student' | 'teacher' }) => {
         const { error } = await signUp({
             name: data.name,
-            email: data.email || '',
+            username: data.username,
             password: data.password,
             role: data.role,
             phone: data.phone,

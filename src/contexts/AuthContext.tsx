@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
-import type { Profile } from '../lib/database.types';
+import { supabase, Profile } from '../lib/supabase';
 
 // ==============================================
 // Auth Context - إدارة حالة المستخدم مع Supabase
+// Using Username instead of Email
 // ==============================================
 
 interface AuthContextType {
@@ -14,7 +14,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     signUp: (data: SignUpData) => Promise<{ error: Error | null }>;
-    signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+    signIn: (username: string, password: string) => Promise<{ error: Error | null }>;
     signOut: () => Promise<void>;
     updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
     completeOnboarding: (goals: string[], level: string) => Promise<{ error: Error | null }>;
@@ -22,11 +22,16 @@ interface AuthContextType {
 
 interface SignUpData {
     name: string;
-    email: string;
+    username: string;
     password: string;
     role: 'student' | 'teacher';
     phone?: string;
 }
+
+// Helper: Convert username to internal email format
+const usernameToEmail = (username: string): string => {
+    return `${username.toLowerCase()}@itqan.local`;
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -103,17 +108,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
     }, []);
 
-    // Sign up new user
+    // Sign up new user with username
     const signUp = async (data: SignUpData): Promise<{ error: Error | null }> => {
         try {
             setIsLoading(true);
 
+            // Convert username to internal email
+            const internalEmail = usernameToEmail(data.username);
+
             const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: data.email,
+                email: internalEmail,
                 password: data.password,
                 options: {
                     data: {
                         name: data.name,
+                        username: data.username,
                         role: data.role,
                         phone: data.phone,
                     },
@@ -121,11 +130,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             });
 
             if (authError) {
+                // Make error message more user-friendly
+                if (authError.message.includes('already registered')) {
+                    return { error: new Error('اسم المستخدم مستخدم بالفعل') };
+                }
                 return { error: authError };
             }
 
-            // Profile is created automatically via trigger
+            // Update profile with username
             if (authData.user) {
+                await supabase
+                    .from('profiles')
+                    .update({
+                        name: data.name,
+                        phone: data.phone || null,
+                    })
+                    .eq('id', authData.user.id);
+
                 const userProfile = await fetchProfile(authData.user.id);
                 setProfile(userProfile);
             }
@@ -138,18 +159,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    // Sign in existing user
-    const signIn = async (email: string, password: string): Promise<{ error: Error | null }> => {
+    // Sign in existing user with username
+    const signIn = async (username: string, password: string): Promise<{ error: Error | null }> => {
         try {
             setIsLoading(true);
 
+            // Convert username to internal email
+            const internalEmail = usernameToEmail(username);
+
             const { data, error } = await supabase.auth.signInWithPassword({
-                email,
+                email: internalEmail,
                 password,
             });
 
             if (error) {
-                return { error };
+                return { error: new Error('اسم المستخدم أو كلمة المرور غير صحيحة') };
             }
 
             if (data.user) {

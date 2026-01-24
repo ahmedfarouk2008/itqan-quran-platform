@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Eye, EyeOff, ChevronLeft, Check } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, ChevronLeft, Check, AtSign, User } from 'lucide-react';
 import { UserRole } from '../../types';
 import '../../styles/pages/auth.css';
 
@@ -16,10 +16,10 @@ interface SignupPageProps {
 
 interface SignupData {
     name: string;
-    email?: string;
-    phone?: string;
+    username: string;
     password: string;
     role: UserRole;
+    phone?: string;
 }
 
 const SignupPage: React.FC<SignupPageProps> = ({
@@ -29,8 +29,7 @@ const SignupPage: React.FC<SignupPageProps> = ({
     onBack
 }) => {
     const [name, setName] = useState('');
-    const [contactMethod, setContactMethod] = useState<'email' | 'phone'>('email');
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -45,9 +44,24 @@ const SignupPage: React.FC<SignupPageProps> = ({
 
     const isPasswordValid = passwordRequirements.every(req => req.met);
 
+    // Username validation
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    const isUsernameValid = usernameRegex.test(username);
+
+    const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Only allow alphanumeric and underscore, no spaces
+        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+        setUsername(value);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+
+        if (!isUsernameValid) {
+            setError('اسم المستخدم يجب أن يكون ٣-٢٠ حرف (حروف إنجليزية وأرقام و _ فقط)');
+            return;
+        }
 
         if (!isPasswordValid) {
             setError('كلمة المرور لا تستوفي المتطلبات');
@@ -59,13 +73,17 @@ const SignupPage: React.FC<SignupPageProps> = ({
         try {
             await onSignup({
                 name,
-                email: contactMethod === 'email' ? email : undefined,
-                phone: contactMethod === 'phone' ? phone : undefined,
+                username,
+                phone: phone || undefined,
                 password,
                 role: selectedRole,
             });
-        } catch (err) {
-            setError('حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة مرة أخرى');
+        } catch (err: any) {
+            if (err?.message?.includes('already registered')) {
+                setError('اسم المستخدم مستخدم بالفعل، اختر اسماً آخر');
+            } else {
+                setError('حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة مرة أخرى');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -107,9 +125,10 @@ const SignupPage: React.FC<SignupPageProps> = ({
                         </div>
                     )}
 
-                    {/* Name */}
+                    {/* Full Name */}
                     <div className="form-group">
                         <label className="form-label" htmlFor="name">
+                            <User size={16} className="form-label-icon" />
                             الاسم الكامل
                         </label>
                         <input
@@ -123,61 +142,49 @@ const SignupPage: React.FC<SignupPageProps> = ({
                         />
                     </div>
 
-                    {/* Contact Method Toggle */}
+                    {/* Username */}
                     <div className="form-group">
-                        <label className="form-label">وسيلة التواصل</label>
-                        <div className="tabs">
-                            <button
-                                type="button"
-                                className={`tab ${contactMethod === 'email' ? 'active' : ''}`}
-                                onClick={() => setContactMethod('email')}
-                            >
-                                البريد الإلكتروني
-                            </button>
-                            <button
-                                type="button"
-                                className={`tab ${contactMethod === 'phone' ? 'active' : ''}`}
-                                onClick={() => setContactMethod('phone')}
-                            >
-                                رقم الموبايل
-                            </button>
-                        </div>
+                        <label className="form-label" htmlFor="username">
+                            <AtSign size={16} className="form-label-icon" />
+                            اسم المستخدم
+                        </label>
+                        <input
+                            id="username"
+                            type="text"
+                            className="form-input"
+                            placeholder="مثال: ahmed_123"
+                            value={username}
+                            onChange={handleUsernameChange}
+                            required
+                            dir="ltr"
+                            autoComplete="username"
+                            maxLength={20}
+                        />
+                        <p className="form-hint">
+                            حروف إنجليزية صغيرة وأرقام و _ فقط (٣-٢٠ حرف)
+                        </p>
+                        {username && !isUsernameValid && (
+                            <p className="form-error-hint">
+                                اسم المستخدم غير صالح
+                            </p>
+                        )}
                     </div>
 
-                    {/* Email or Phone */}
-                    {contactMethod === 'email' ? (
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="email">
-                                البريد الإلكتروني
-                            </label>
-                            <input
-                                id="email"
-                                type="email"
-                                className="form-input"
-                                placeholder="example@email.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                dir="ltr"
-                            />
-                        </div>
-                    ) : (
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="phone">
-                                رقم الموبايل
-                            </label>
-                            <input
-                                id="phone"
-                                type="tel"
-                                className="form-input"
-                                placeholder="+20 1XX XXX XXXX"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                required
-                                dir="ltr"
-                            />
-                        </div>
-                    )}
+                    {/* Phone (Optional) */}
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="phone">
+                            رقم الموبايل <span className="optional-label">(اختياري)</span>
+                        </label>
+                        <input
+                            id="phone"
+                            type="tel"
+                            className="form-input"
+                            placeholder="+20 1XX XXX XXXX"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            dir="ltr"
+                        />
+                    </div>
 
                     {/* Password */}
                     <div className="form-group">
@@ -194,6 +201,7 @@ const SignupPage: React.FC<SignupPageProps> = ({
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 dir="ltr"
+                                autoComplete="new-password"
                             />
                             <button
                                 type="button"
@@ -221,7 +229,7 @@ const SignupPage: React.FC<SignupPageProps> = ({
                     <button
                         type="submit"
                         className="btn btn-primary btn-lg w-full"
-                        disabled={isLoading || !isPasswordValid}
+                        disabled={isLoading || !isPasswordValid || !isUsernameValid || !name}
                     >
                         {isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
                     </button>

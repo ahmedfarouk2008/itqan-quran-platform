@@ -7,13 +7,13 @@ import '../../styles/pages/auth.css';
 // ==============================================
 
 interface LoginPageProps {
-    onLogin: (email: string, password: string) => Promise<void>;
+    onLogin: (username: string, password: string) => Promise<void>;
     onNavigateToSignup: () => void;
     onBack: () => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBack }) => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -25,9 +25,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
         setIsLoading(true);
 
         try {
-            await onLogin(email, password);
+            await onLogin(username, password);
         } catch (err) {
-            setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+            setError('اسم المستخدم أو كلمة المرور غير صحيحة');
         } finally {
             setIsLoading(false);
         }
@@ -65,18 +65,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
                     )}
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="email">
-                            البريد الإلكتروني أو رقم الموبايل
+                        <label className="form-label" htmlFor="username">
+                            اسم المستخدم
                         </label>
                         <input
-                            id="email"
+                            id="username"
                             type="text"
                             className="form-input"
-                            placeholder="example@email.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="أدخل اسم المستخدم"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
                             required
                             dir="ltr"
+                            autoComplete="username"
                         />
                     </div>
 
@@ -94,6 +95,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 dir="ltr"
+                                autoComplete="current-password"
                             />
                             <button
                                 type="button"

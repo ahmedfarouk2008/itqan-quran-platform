@@ -64,29 +64,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Initialize auth state
     useEffect(() => {
+        let mounted = true;
+
+        // Safety timeout to prevent infinite loading
+        const loadingTimeout = setTimeout(() => {
+            if (mounted && isLoading) {
+                console.warn('Auth loading timed out - forcing completion');
+                setIsLoading(false);
+            }
+        }, 4000);
+
         // Get initial session
         const initAuth = async () => {
             try {
                 const { data: { session: initialSession } } = await supabase.auth.getSession();
 
-                if (initialSession) {
+                if (mounted && initialSession) {
                     setSession(initialSession);
                     setUser(initialSession.user);
                     const userProfile = await fetchProfile(initialSession.user.id);
-                    setProfile(userProfile);
+                    if (mounted) {
+                        setProfile(userProfile);
+                    }
                 }
             } catch (error) {
                 console.error('Error initializing auth:', error);
             } finally {
-                setIsLoading(false);
+                if (mounted) {
+                    setIsLoading(false);
+                    clearTimeout(loadingTimeout);
+                }
             }
         };
 
-        initAuth();
+        if (isLoading) {
+            initAuth();
+        }
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, newSession) => {
+                if (!mounted) return;
+
                 console.log('Auth state changed:', event);
 
                 setSession(newSession);
@@ -94,16 +113,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                 if (newSession?.user) {
                     const userProfile = await fetchProfile(newSession.user.id);
-                    setProfile(userProfile);
+                    if (mounted) {
+                        setProfile(userProfile);
+                    }
                 } else {
-                    setProfile(null);
+                    if (mounted) {
+                        setProfile(null);
+                    }
                 }
 
-                setIsLoading(false);
+                if (mounted) {
+                    setIsLoading(false);
+                    clearTimeout(loadingTimeout);
+                }
             }
         );
 
         return () => {
+            mounted = false;
+            clearTimeout(loadingTimeout);
             subscription.unsubscribe();
         };
     }, []);

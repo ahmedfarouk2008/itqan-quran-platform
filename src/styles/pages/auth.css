@@ -1,5 +1,5 @@
 /* ==============================================
-   Auth Pages Styles - Final Alignment Fix with Mascot
+   Auth Pages Styles - Clean & Professional
    ============================================== */
 
 .auth-page {
@@ -12,8 +12,6 @@
     position: relative;
     overflow: hidden;
     direction: rtl;
-    padding-top: 100px;
-    /* Space for mascot head */
 }
 
 /* Background Pattern */
@@ -35,72 +33,46 @@
     background: white;
     border: 1px solid rgba(16, 185, 129, 0.2);
     border-radius: 24px;
-    padding: 40px 40px 30px;
+    padding: 40px;
+    /* Standard Padding */
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
     position: relative;
     z-index: 2;
     text-align: right;
-    margin-top: 40px;
-    /* Ensure mascot sits nicely */
 }
 
-/* ==============================================
-   INTERACTIVE MASCOT STYLES 🐻
-   ============================================== */
-
-.mascot-container {
-    width: 120px;
-    height: 120px;
-    position: absolute;
-    top: -85px;
-    /* Sit on top of card */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    overflow: visible !important;
-    /* Ensure content can escape container */
-}
-
-.mascot-svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible !important;
-    /* Ensure hands are seen */
-}
-
-/* Hands Animation */
-.hand-left,
-.hand-right {
-    transition: transform 0.3s cubic-bezier(0.3, 0.05, 0.2, 1.3);
-    transform-origin: center bottom;
-    transform-box: fill-box;
-    /* Fix origin calculation */
-    transform: translateY(120px) !important;
-    /* Start completely hidden */
-    fill: #047857;
-}
-
-/* State: Blind (Covering Eyes) */
-.mascot-container.blind .hand-left,
-.mascot-container.blind .hand-right {
-    transform: translateY(15px) rotate(0deg) !important;
-    /* Move up to cover eyes - FORCE */
-}
-
-/* State: Peeking (One eye open) */
-.mascot-container.blind.peeking .hand-right {
-    transform: translateY(60px) !important;
-    /* Lower right hand */
-}
-
-/* ==============================================
-   Core UI Styles
-   ============================================== */
+/* Core UI Styles */
 
 /* Header */
+.auth-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.auth-logo-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+    margin-bottom: 12px;
+}
+
+.auth-logo-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #065f46;
+}
+
 .auth-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
 }
 
 .auth-title {
@@ -157,12 +129,13 @@
     text-align: right;
 }
 
+/* Input Fields - Clean & Crisp */
 .form-input {
     width: 100%;
     padding: 12px 14px;
     background: #ffffff !important;
-    border: 2px solid #e5e7eb !important;
-    /* Force visible border */
+    border: 1px solid #d1d5db !important;
+    /* Crisp gray border */
     border-radius: 12px;
     font-size: 0.95rem;
     transition: all 0.2s ease;
@@ -253,7 +226,6 @@
 @media (max-width: 480px) {
     .auth-container {
         padding: 30px 20px;
-        margin-top: 60px;
         width: 100%;
     }
 }

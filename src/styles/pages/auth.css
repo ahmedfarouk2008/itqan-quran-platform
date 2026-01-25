@@ -1,5 +1,5 @@
 /* ==============================================
-   Auth Pages Styles - Final Alignment Fix
+   Auth Pages Styles - Final Alignment Fix with Mascot
    ============================================== */
 
 .auth-page {
@@ -12,7 +12,8 @@
     position: relative;
     overflow: hidden;
     direction: rtl;
-    /* Ensure RTL layout */
+    padding-top: 100px;
+    /* Space for mascot head */
 }
 
 /* Background Pattern */
@@ -30,62 +31,79 @@
 
 .auth-container {
     width: 100%;
-    max-width: 480px;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    max-width: 440px;
+    background: white;
+    border: 1px solid rgba(16, 185, 129, 0.2);
     border-radius: 24px;
-    padding: 40px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.05);
+    padding: 40px 40px 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
     position: relative;
     z-index: 2;
     text-align: right;
-    /* Force Right Alignment */
+    margin-top: 40px;
+    /* Ensure mascot sits nicely */
 }
 
-/* Header Section */
+/* ==============================================
+   INTERACTIVE MASCOT STYLES 🐻
+   ============================================== */
+
+.mascot-container {
+    width: 120px;
+    height: 120px;
+    position: absolute;
+    top: -85px;
+    /* Sit on top of card */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.mascot-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Eye Movement */
+.eyes-group {
+    transition: transform 0.1s ease-out;
+}
+
+/* Hands Animation */
+.hand-left,
+.hand-right {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-origin: center bottom;
+    transform: translateY(110px);
+    /* Initially hidden */
+}
+
+/* State: Blind (Covering Eyes) */
+.mascot-container.blind .hand-left,
+.mascot-container.blind .hand-right {
+    transform: translateY(-5px) rotate(0deg);
+    /* Move up to cover eyes */
+}
+
+/* State: Peeking (One eye open) */
+.mascot-container.blind.peeking .hand-right {
+    transform: translateY(40px);
+    /* Lower right hand */
+}
+
+/* ==============================================
+   Core UI Styles
+   ============================================== */
+
+/* Header */
 .auth-header {
     text-align: center;
-    /* Center header specifically */
-    margin-bottom: 32px;
-    position: relative;
-}
-
-/* Back Button Fix */
-.auth-back-btn {
-    position: absolute;
-    right: 0;
-    top: -30px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    border: none;
-    color: #6b7280;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.auth-back-btn:hover {
-    color: #111827;
-}
-
-.auth-logo-icon {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
-    margin: 10px auto 20px;
+    margin-bottom: 24px;
 }
 
 .auth-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #111827;
     margin-bottom: 8px;
@@ -93,120 +111,144 @@
 
 .auth-subtitle {
     color: #6b7280;
-    font-size: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Back Button */
+.auth-back-btn {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    z-index: 20;
+}
+
+.auth-back-btn:hover {
+    color: #1f2937;
 }
 
 /* Form Styles */
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 8px;
 }
 
 .form-label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 600;
+    font-size: 0.9rem;
     color: #374151;
     text-align: right;
-    /* Explicitly right aligned */
 }
 
 .form-input {
     width: 100%;
-    padding: 14px 16px;
-    background: #ffffff;
+    padding: 12px 14px;
+    background: #f9fafb;
     border: 2px solid #e5e7eb;
     border-radius: 12px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     transition: all 0.2s ease;
     text-align: right;
-    /* Explicitly right aligned */
 }
 
 .form-input:focus {
-    outline: none;
+    background: white;
     border-color: #10b981;
+    outline: none;
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-icon-btn {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 5;
+}
+
+.input-icon-btn:hover {
+    color: #10b981;
 }
 
 .btn-primary {
     width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, #10b981, #059669);
+    padding: 14px;
+    background: #10b981;
     color: white;
     border: none;
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-    margin-top: 10px;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
+    margin-top: 8px;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+    background: #059669;
+    transform: translateY(-1px);
 }
 
-/* Onboarding Options */
-.onboarding-option {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    border: 2px solid #e5e7eb;
-    border-radius: 16px;
-    cursor: pointer;
-    background: white;
-    transition: all 0.2s;
-    text-align: right;
+.btn-primary:active {
+    transform: translateY(0);
 }
 
-.onboarding-option:hover {
-    background: #f0fdf4;
-    border-color: #86efac;
-}
-
-.onboarding-option.selected {
-    background: #ecfdf5;
-    border-color: #10b981;
-}
-
-.option-content {
-    flex: 1;
-}
-
-.option-title {
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 4px;
-}
-
-.option-description {
-    font-size: 0.85rem;
+/* Footer */
+.auth-footer {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.9rem;
     color: #6b7280;
 }
 
-.option-check {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 2px solid #d1d5db;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
+.auth-link {
+    color: #10b981;
+    font-weight: 700;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: inherit;
 }
 
-.onboarding-option.selected .option-check {
-    background: #10b981;
-    border-color: #10b981;
+.auth-link:hover {
+    text-decoration: underline;
 }
 
 @media (max-width: 480px) {
     .auth-container {
-        padding: 24px;
+        padding: 30px 20px;
+        margin-top: 60px;
+        width: 100%;
     }
 }

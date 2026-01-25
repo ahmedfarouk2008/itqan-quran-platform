@@ -57,6 +57,8 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
+    overflow: visible !important;
+    /* Ensure content can escape container */
 }
 
 .mascot-svg {
@@ -71,6 +73,8 @@
 .hand-right {
     transition: transform 0.3s cubic-bezier(0.3, 0.05, 0.2, 1.3);
     transform-origin: center bottom;
+    transform-box: fill-box;
+    /* Fix origin calculation */
     transform: translateY(120px) !important;
     /* Start completely hidden */
     fill: #047857;

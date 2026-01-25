@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { BookOpen, Eye, EyeOff, ChevronLeft, Check, AtSign, User } from 'lucide-react';
+import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { UserRole } from '../../types';
 import '../../styles/pages/auth.css';
 
 // ==============================================
-// Signup Page - صفحة إنشاء حساب
+// Signup Page - صفحة إنشاء حساب (تفاعلية) 🐻
 // ==============================================
 
 interface SignupPageProps {
@@ -14,7 +14,7 @@ interface SignupPageProps {
     onBack: () => void;
 }
 
-interface SignupData {
+export interface SignupData {
     name: string;
     username: string;
     password: string;
@@ -36,35 +36,29 @@ const SignupPage: React.FC<SignupPageProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Mascot States
+    const [mascotState, setMascotState] = useState<'idle' | 'blind'>('idle');
+
     const passwordRequirements = [
         { label: '٨ أحرف على الأقل', met: password.length >= 8 },
-        { label: 'حرف كبير واحد على الأقل', met: /[A-Z]/.test(password) },
-        { label: 'رقم واحد على الأقل', met: /[0-9]/.test(password) },
+        { label: 'حرف كبير ورقم', met: /[A-Z]/.test(password) && /[0-9]/.test(password) },
     ];
 
     const isPasswordValid = passwordRequirements.every(req => req.met);
-
-    // Username validation
     const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
     const isUsernameValid = usernameRegex.test(username);
-
-    const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Only allow alphanumeric and underscore, no spaces
-        const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
-        setUsername(value);
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
         if (!isUsernameValid) {
-            setError('اسم المستخدم يجب أن يكون ٣-٢٠ حرف (حروف إنجليزية وأرقام و _ فقط)');
+            setError('اسم المستخدم يجب أن يكون ٣-٢٠ حرف (إنجليزي وأرقام فقط)');
             return;
         }
 
         if (!isPasswordValid) {
-            setError('كلمة المرور لا تستوفي المتطلبات');
+            setError('كلمة المرور ضعيفة');
             return;
         }
 
@@ -80,9 +74,9 @@ const SignupPage: React.FC<SignupPageProps> = ({
             });
         } catch (err: any) {
             if (err?.message?.includes('already registered')) {
-                setError('اسم المستخدم مستخدم بالفعل، اختر اسماً آخر');
+                setError('اسم المستخدم موجود بالفعل');
             } else {
-                setError('حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة مرة أخرى');
+                setError('حدث خطأ، حاول مرة أخرى');
             }
         } finally {
             setIsLoading(false);
@@ -98,156 +92,110 @@ const SignupPage: React.FC<SignupPageProps> = ({
                     <span>العودة</span>
                 </button>
 
-                {/* Logo */}
-                <div className="auth-logo">
-                    <div className="auth-logo-icon">
-                        <BookOpen size={28} />
-                    </div>
-                    <span className="auth-logo-text">إتقان</span>
+                {/* Interactive Mascot */}
+                <div className={`mascot-container ${mascotState} ${showPassword ? 'peeking' : ''}`}>
+                    <svg viewBox="0 0 120 120" className="mascot-svg">
+                        <path d="M60 110 C90 110 110 90 110 60 C110 30 90 10 60 10 C30 10 10 30 10 60 C10 90 30 110 60 110" fill="#10b981" />
+                        <circle cx="20" cy="40" r="10" fill="#059669" />
+                        <circle cx="100" cy="40" r="10" fill="#059669" />
+                        <g className="eyes-group">
+                            <ellipse cx="45" cy="55" rx="10" ry="12" fill="white" />
+                            <ellipse cx="75" cy="55" rx="10" ry="12" fill="white" />
+                            <circle cx="45" cy="55" r="4" fill="#1f2937" />
+                            <circle cx="75" cy="55" r="4" fill="#1f2937" />
+                        </g>
+                        <path d="M50 75 Q60 82 70 75" stroke="#064e3b" strokeWidth="3" fill="none" strokeLinecap="round" />
+                        <g className="hands-group">
+                            <path className="hand-left" d="M30 110 Q45 60 60 60 Q45 60 30 110" fill="#047857" />
+                            <path className="hand-right" d="M90 110 Q75 60 60 60 Q75 60 90 110" fill="#047857" />
+                        </g>
+                    </svg>
                 </div>
 
                 {/* Title */}
-                <div className="auth-header">
-                    <h1 className="auth-title">إنشاء حساب جديد</h1>
+                <div className="auth-header" style={{ marginTop: '0' }}>
+                    <h1 className="auth-title">حساب جديد</h1>
                     <p className="auth-subtitle">
-                        {selectedRole === UserRole.STUDENT
-                            ? 'ابدأ رحلتك مع القرآن الكريم'
-                            : 'انضم كمعلمة وساعد الطلاب في رحلتهم'
-                        }
+                        {selectedRole === UserRole.STUDENT ? 'ابدأ رحلتك مع القرآن' : 'انضم كمعلمة'}
                     </p>
                 </div>
 
                 {/* Form */}
                 <form className="auth-form" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="auth-error">
-                            {error}
+                    {error && <div className="auth-error">{error}</div>}
+
+                    {/* Compact layout for Name & Username */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="name">الاسم</label>
+                            <input
+                                id="name"
+                                type="text"
+                                className="form-input"
+                                placeholder="اسمك الكامل"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
                         </div>
-                    )}
-
-                    {/* Full Name */}
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="name">
-                            <User size={16} className="form-label-icon" />
-                            الاسم الكامل
-                        </label>
-                        <input
-                            id="name"
-                            type="text"
-                            className="form-input"
-                            placeholder="أدخل اسمك الكامل"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="username">المستخدم</label>
+                            <input
+                                id="username"
+                                type="text"
+                                className="form-input"
+                                placeholder="ahmed_123"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                                required
+                                dir="ltr"
+                            />
+                        </div>
                     </div>
 
-                    {/* Username */}
                     <div className="form-group">
-                        <label className="form-label" htmlFor="username">
-                            <AtSign size={16} className="form-label-icon" />
-                            اسم المستخدم
-                        </label>
-                        <input
-                            id="username"
-                            type="text"
-                            className="form-input"
-                            placeholder="مثال: ahmed_123"
-                            value={username}
-                            onChange={handleUsernameChange}
-                            required
-                            dir="ltr"
-                            autoComplete="username"
-                            maxLength={20}
-                        />
-                        <p className="form-hint">
-                            حروف إنجليزية صغيرة وأرقام و _ فقط (٣-٢٠ حرف)
-                        </p>
-                        {username && !isUsernameValid && (
-                            <p className="form-error-hint">
-                                اسم المستخدم غير صالح
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Phone (Optional) */}
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="phone">
-                            رقم الموبايل <span className="optional-label">(اختياري)</span>
-                        </label>
-                        <input
-                            id="phone"
-                            type="tel"
-                            className="form-input"
-                            placeholder="+20 1XX XXX XXXX"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            dir="ltr"
-                        />
-                    </div>
-
-                    {/* Password */}
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="password">
-                            كلمة المرور
-                        </label>
+                        <label className="form-label" htmlFor="password">كلمة المرور</label>
                         <div className="input-with-icon">
                             <input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 className="form-input"
-                                placeholder="أدخل كلمة المرور"
+                                placeholder="******"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                onFocus={() => setMascotState('blind')}
+                                onBlur={() => setMascotState('idle')}
                                 required
                                 dir="ltr"
-                                autoComplete="new-password"
                             />
                             <button
                                 type="button"
                                 className="input-icon-btn"
                                 onClick={() => setShowPassword(!showPassword)}
+                                tabIndex={-1}
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? "إخفاء" : "إظهار"}
                             </button>
                         </div>
-
-                        {/* Password Requirements */}
-                        <div className="password-requirements">
-                            {passwordRequirements.map((req, index) => (
-                                <div
-                                    key={index}
-                                    className={`password-requirement ${req.met ? 'met' : ''}`}
-                                >
-                                    <Check size={14} />
-                                    <span>{req.label}</span>
-                                </div>
-                            ))}
+                        {/* Simple Password Strength Indicator */}
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.75rem', color: '#6b7280' }}>
+                            <span style={{ color: password.length >= 8 ? '#10b981' : 'inherit' }}>• ٨ أحرف</span>
+                            <span style={{ color: /[A-Z]/.test(password) && /[0-9]/.test(password) ? '#10b981' : 'inherit' }}>• حرف ورقم</span>
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        className="btn btn-primary btn-lg w-full"
-                        disabled={isLoading || !isPasswordValid || !isUsernameValid || !name}
-                    >
-                        {isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
+                    <button type="submit" className="btn-primary" disabled={isLoading || !isPasswordValid || !isUsernameValid || !name}>
+                        {isLoading ? 'جاري الإنشاء...' : 'إنشاء الحساب'}
                     </button>
                 </form>
 
-                {/* Footer */}
                 <div className="auth-footer">
                     <p>
-                        لديك حساب بالفعل؟{' '}
-                        <button className="auth-link" onClick={onNavigateToLogin}>
-                            تسجيل الدخول
-                        </button>
+                        لديك حساب؟{' '}
+                        <button className="auth-link" onClick={onNavigateToLogin}>تسجيل الدخول</button>
                     </p>
                 </div>
             </div>
-
-            {/* Background */}
-            <div className="auth-bg" />
         </div>
     );
 };

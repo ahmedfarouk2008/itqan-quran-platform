@@ -1,5 +1,5 @@
 /* ==============================================
-   Auth Pages Styles - النسخة المحسنة 🌟
+   Auth Pages Styles - النسخة النهائية والمنقحة 🌟
    ============================================== */
 
 .auth-page {
@@ -44,19 +44,42 @@
 .auth-header {
     text-align: center;
     margin-bottom: 32px;
+    position: relative;
+}
+
+/* Back Button Fix */
+.auth-back-btn {
+    position: absolute;
+    right: 0;
+    top: -30px;
+    /* Move it up clearly */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.auth-back-btn:hover {
+    color: #111827;
 }
 
 .auth-logo-icon {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: linear-gradient(135deg, #10b981, #059669);
-    border-radius: 14px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
-    margin: 0 auto 16px;
+    margin: 10px auto 20px;
+    /* Add margin top to separate from back button */
 }
 
 .auth-title {
@@ -76,6 +99,13 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
 }
 
 .form-input {
@@ -106,6 +136,7 @@
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    margin-top: 10px;
 }
 
 .btn-primary:hover {
@@ -113,17 +144,33 @@
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
 }
 
+/* Footer & Links */
 .auth-footer {
     text-align: center;
     margin-top: 24px;
     padding-top: 24px;
     border-top: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
 }
 
 .auth-link {
     color: #059669;
     font-weight: 700;
     cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: none;
+    /* No underline by default */
+}
+
+.auth-link:hover {
+    text-decoration: underline;
 }
 
 @media (max-width: 480px) {

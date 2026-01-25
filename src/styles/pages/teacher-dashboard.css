@@ -1,5 +1,5 @@
 /* ==============================================
-   Teacher Dashboard - إصلاح نهائي
+   Teacher Dashboard - تنظيف شامل للأزرار
    ============================================== */
 
 .teacher-dashboard {
@@ -22,17 +22,24 @@
     margin-bottom: var(--space-4);
 }
 
-.dashboard-header h1 {
+.header-date button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
     color: white;
-    margin: 0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
 }
 
-.dashboard-header p {
-    color: rgba(255, 255, 255, 0.9);
-    margin-top: var(--space-2);
+.header-date button:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
-/* Stats Grid */
+/* Stats Cards */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -41,69 +48,180 @@
 
 .stat-card {
     background: white;
-    border: 1px solid var(--color-neutral-200);
+    border: none;
+    /* No Border */
     padding: var(--space-6);
     border-radius: var(--radius-xl);
     display: flex;
     align-items: center;
     gap: var(--space-4);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Content Sections */
+.content-section {
+    background: white;
+    border: none;
+    /* No Border */
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.section-header button {
+    background: transparent;
+    border: none;
+    /* No border */
+    color: var(--color-primary-600);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.section-header button:hover {
+    color: var(--color-primary-700);
+}
+
+/* Session Cards */
+.session-card {
+    border: 1px solid #f3f4f6;
+    /* Very light border */
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
 }
 
-.stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: var(--radius-lg);
+.start-session-btn {
+    background: var(--color-primary-50);
+    border: none;
+    /* No border */
+    color: var(--color-primary-600);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: white;
+    gap: 6px;
+    transition: all 0.2s;
 }
 
-.stat-card.students .stat-icon {
-    background: #6366f1;
+.start-session-btn:hover {
+    background: var(--color-primary-100);
 }
 
-.stat-card.sessions .stat-icon {
-    background: #10b981;
+/* Review Cards */
+.review-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-bottom: 1px solid #f3f4f6;
 }
 
-.stat-card.homework .stat-icon {
-    background: #f59e0b;
+.review-btn {
+    background: white;
+    border: 1px solid #e5e7eb;
+    /* Soft border */
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: #4b5563;
+    transition: all 0.2s;
 }
 
-.stat-card.rating .stat-icon {
-    background: #ec4899;
+.review-btn:hover {
+    border-color: var(--color-primary-500);
+    color: var(--color-primary-600);
 }
 
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-}
-
-.stat-label {
-    font-size: 0.875rem;
+/* Quick Actions */
+.quick-action-btn {
+    border: none;
+    /* No border */
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    transition: all 0.2s;
     color: #4b5563;
 }
 
-/* Content Grid */
+.quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    background: #fafafa;
+}
+
+.quick-action-btn.primary {
+    background: var(--color-primary-600);
+    color: white;
+}
+
+.quick-action-btn.primary:hover {
+    background: var(--color-primary-700);
+}
+
+/* Grid Layout */
 .dashboard-content {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
     gap: var(--space-8);
 }
 
-.content-section {
-    background: white;
-    border: 1px solid var(--color-neutral-200);
-    border-radius: var(--radius-xl);
-    padding: var(--space-6);
-    box-shadow: var(--shadow-sm);
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-6);
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 @media (max-width: 1024px) {
     .dashboard-content {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
     }
 }

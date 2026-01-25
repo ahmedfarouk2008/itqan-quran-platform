@@ -143,6 +143,15 @@ a:hover {
     background-color: var(--color-primary-50);
 }
 
+/* Global Button Reset */
+button {
+    font-family: inherit;
+    border: none;
+    outline: none;
+    background: none;
+    cursor: pointer;
+}
+
 .btn-ghost {
     background-color: transparent;
     color: var(--color-neutral-600);

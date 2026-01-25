@@ -12,6 +12,12 @@ import SessionsPage from './pages/Student/SessionsPage';
 import LearningPage from './pages/Student/LearningPage';
 import HomeworkPage from './pages/Student/HomeworkPage';
 import MessagesPage from './pages/Shared/MessagesPage';
+import {
+    TeacherDashboard,
+    TeacherStudentsPage,
+    TeacherSessionsPage,
+    TeacherHomeworkPage,
+} from './pages/Teacher';
 import AppLayout from './components/Layout/AppLayout';
 
 // Styles
@@ -206,50 +212,27 @@ const AppContent: React.FC = () => {
     const renderTeacherContent = () => {
         switch (activeTab) {
             case 'dashboard':
-                return <PlaceholderPage title="لوحة التحكم" description="لوحة تحكم المعلمة قيد الإنشاء" />;
+                return <TeacherDashboard onNavigate={setActiveTab} />;
+            case 'teacher-sessions':
             case 'sessions':
-                return <PlaceholderPage title="الجلسات" description="إدارة الجلسات قيد الإنشاء" />;
+                return <TeacherSessionsPage onNavigate={setActiveTab} />;
+            case 'teacher-students':
             case 'students':
-                return <PlaceholderPage title="الطلاب" description="إدارة الطلاب قيد الإنشاء" />;
+                return <TeacherStudentsPage onNavigate={setActiveTab} />;
+            case 'teacher-homework':
             case 'homework':
-                return <PlaceholderPage title="الواجبات" description="إدارة الواجبات قيد الإنشاء" />;
+                return <TeacherHomeworkPage onNavigate={setActiveTab} />;
             case 'messages':
                 return <MessagesPage onNavigate={setActiveTab} />;
             default:
-                return <PlaceholderPage title="لوحة التحكم" description="لوحة تحكم المعلمة قيد الإنشاء" />;
+                return <TeacherDashboard onNavigate={setActiveTab} />;
         }
     };
+
 
     return renderView();
 };
 
-// Placeholder Page Component
-const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
-    <div className="placeholder-page">
-        <div className="placeholder-content">
-            <h1>{title}</h1>
-            <p>{description}</p>
-        </div>
-        <style>{`
-      .placeholder-page {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        text-align: center;
-        padding: 2rem;
-      }
-      .placeholder-content h1 {
-        font-size: 1.75rem;
-        color: var(--color-neutral-800);
-        margin-bottom: 0.5rem;
-      }
-      .placeholder-content p {
-        color: var(--color-neutral-500);
-      }
-    `}</style>
-    </div>
-);
 
 // Main App with Providers
 const App: React.FC = () => {

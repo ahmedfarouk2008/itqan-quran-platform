@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Eye, EyeOff, ChevronLeft, Check, AtSign, User } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { UserRole } from '../../types';
 import '../../styles/pages/auth.css';
 
@@ -145,6 +145,20 @@ const SignupPage: React.FC<SignupPageProps> = ({
                         </div>
                     </div>
 
+                    {/* Phone - Restored */}
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="phone">رقم الهاتف (اختياري)</label>
+                        <input
+                            id="phone"
+                            type="tel"
+                            className="form-input"
+                            placeholder="01xxxxxxxxx"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            dir="ltr"
+                        />
+                    </div>
+
                     <div className="form-group">
                         <label className="form-label" htmlFor="password">كلمة المرور</label>
                         <div className="input-with-icon">
@@ -164,7 +178,7 @@ const SignupPage: React.FC<SignupPageProps> = ({
                                 onClick={() => setShowPassword(!showPassword)}
                                 tabIndex={-1}
                             >
-                                {showPassword ? "إخفاء" : "إظهار"}
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
                         {/* Password Strength */}

@@ -73,23 +73,24 @@
 /* Hands Animation */
 .hand-left,
 .hand-right {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.3s cubic-bezier(0.3, 0.05, 0.2, 1.3);
+    /* Softer bounce */
     transform-origin: center bottom;
-    transform: translateY(110px);
-    /* Initially hidden */
+    transform: translateY(150px);
+    /* Start lower down */
 }
 
 /* State: Blind (Covering Eyes) */
 .mascot-container.blind .hand-left,
 .mascot-container.blind .hand-right {
-    transform: translateY(-5px) rotate(0deg);
-    /* Move up to cover eyes */
+    transform: translateY(10px) rotate(0deg);
+    /* Improved target position */
 }
 
 /* State: Peeking (One eye open) */
 .mascot-container.blind.peeking .hand-right {
-    transform: translateY(40px);
-    /* Lower right hand */
+    transform: translateY(50px);
+    /* Lower right hand slightly */
 }
 
 /* ==============================================

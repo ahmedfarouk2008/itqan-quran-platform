@@ -8,7 +8,8 @@ import {
     MessageSquare,
     LogOut,
     Menu,
-    X
+    X,
+    BarChart3,
 } from 'lucide-react';
 import { UserRole, User as UserType } from '../../types';
 import '../../styles/layout.css';
@@ -43,6 +44,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 { id: 'students', label: 'الطلاب', icon: GraduationCap },
                 { id: 'homework', label: 'الواجبات', icon: ClipboardCheck },
                 { id: 'messages', label: 'الرسائل', icon: MessageSquare, badge: 2 },
+                { id: 'reports', label: 'التقارير', icon: BarChart3 },
             ];
         } else {
             return [
@@ -51,6 +53,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 { id: 'learning', label: 'التعلّم', icon: BookOpen },
                 { id: 'homework', label: 'الواجب', icon: ClipboardCheck },
                 { id: 'messages', label: 'الرسائل', icon: MessageSquare },
+                { id: 'reports', label: 'التقارير', icon: BarChart3 },
             ];
         }
     };

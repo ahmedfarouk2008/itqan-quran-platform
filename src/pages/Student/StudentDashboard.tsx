@@ -9,7 +9,8 @@ import {
     Star,
     Mic,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    BarChart3,
 } from 'lucide-react';
 import { User, Session, Homework, SessionStatus, HomeworkStatus } from '../../types';
 import '../../styles/pages/student-dashboard.css';
@@ -304,6 +305,15 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                             <BookOpen size={24} />
                         </div>
                         <span>راجع الأخطاء</span>
+                    </button>
+                    <button
+                        className="quick-action-btn"
+                        onClick={() => onNavigate('reports')}
+                    >
+                        <div className="quick-action-icon">
+                            <BarChart3 size={24} />
+                        </div>
+                        <span>إحصائياتي</span>
                     </button>
                 </div>
             </div>

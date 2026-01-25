@@ -12,6 +12,7 @@ import {
     Play,
     CheckCircle,
     AlertCircle,
+    BarChart3,
 } from 'lucide-react';
 import '../../styles/pages/teacher-dashboard.css';
 
@@ -137,8 +138,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                     <p>لديك {dashboardStats.todaySessions} جلسات اليوم</p>
                 </div>
                 <div className="header-date">
-                    <span className="day">السبت</span>
-                    <span className="date">25 يناير 2026</span>
+                    <button className="view-reports-header-btn" onClick={() => onNavigate('reports')}>
+                        <BarChart3 size={16} />
+                        عرض التقارير
+                    </button>
+                    <div className="date-display">
+                        <span className="day">السبت</span>
+                        <span className="date">25 يناير 2026</span>
+                    </div>
                 </div>
             </div>
 
@@ -315,6 +322,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                 <button className="quick-action-btn" onClick={() => onNavigate('messages')}>
                     <MessageSquare size={20} />
                     الرسائل
+                </button>
+                <button className="quick-action-btn" onClick={() => onNavigate('reports')}>
+                    <BarChart3 size={20} />
+                    التقارير
                 </button>
             </div>
         </div>

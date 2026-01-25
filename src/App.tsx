@@ -45,11 +45,7 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         if (!isLoading) {
             if (isAuthenticated && profile) {
-                if (!profile.level || !profile.goals || profile.goals.length === 0) {
-                    setCurrentView('onboarding');
-                } else {
-                    setCurrentView('app');
-                }
+                setCurrentView('app');
             } else if (!isAuthenticated) {
                 // Return to landing page if not authenticated
                 setCurrentView('landing');
@@ -89,7 +85,7 @@ const AppContent: React.FC = () => {
         }
 
         success('تم إنشاء الحساب بنجاح!');
-        setCurrentView('onboarding');
+        setCurrentView('app');
     };
 
     // Handle onboarding complete

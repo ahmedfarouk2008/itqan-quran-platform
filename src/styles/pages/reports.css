@@ -1,0 +1,104 @@
+/* ==============================================
+   Reports Page - إصلاح شامل ونهائي
+   ============================================== */
+
+.reports-page {
+    padding: var(--space-6);
+    background-color: var(--color-neutral-50);
+}
+
+/* Header */
+.reports-header {
+    background: white;
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+}
+
+.header-content h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+
+.stat-card {
+    background: white;
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 140px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card.gradient-green {
+    background: linear-gradient(135deg, #059669, #10b981);
+}
+
+.stat-card.gradient-blue {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.stat-card.gradient-purple {
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+
+.stat-card.gradient-orange {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.stat-card .stat-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin: var(--space-2) 0;
+    z-index: 2;
+}
+
+.stat-card .stat-label {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    z-index: 2;
+}
+
+/* Charts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-6);
+}
+
+.chart-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    min-width: 0;
+}
+
+.chart-card.full-width {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}

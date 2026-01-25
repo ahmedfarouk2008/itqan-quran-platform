@@ -41,16 +41,21 @@ const AppContent: React.FC = () => {
     const [selectedRole, setSelectedRole] = useState<'student' | 'teacher'>('student');
     const [activeTab, setActiveTab] = useState('dashboard');
 
-    // Check if user needs onboarding
+    // Check if user needs onboarding or should be redirected
     useEffect(() => {
-        if (isAuthenticated && profile) {
-            if (!profile.level || !profile.goals || profile.goals.length === 0) {
-                setCurrentView('onboarding');
-            } else {
-                setCurrentView('app');
+        if (!isLoading) {
+            if (isAuthenticated && profile) {
+                if (!profile.level || !profile.goals || profile.goals.length === 0) {
+                    setCurrentView('onboarding');
+                } else {
+                    setCurrentView('app');
+                }
+            } else if (!isAuthenticated) {
+                // Return to landing page if not authenticated
+                setCurrentView('landing');
             }
         }
-    }, [isAuthenticated, profile]);
+    }, [isAuthenticated, profile, isLoading]);
 
     // Handle role selection from landing
     const handleSelectRole = (role: 'student' | 'teacher') => {

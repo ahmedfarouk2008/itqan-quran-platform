@@ -145,10 +145,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (authData.user) {
                 const { error: updateError } = await supabase
                     .from('profiles')
-                    .update({
+                    .upsert({
+                        id: authData.user.id,
                         name: data.name,
                         phone: data.phone || null,
                         username: data.username,
+                        role: data.role, // Ensure role is also set
+                        email: internalEmail, // Ensure email is set
+                        updated_at: new Date().toISOString(),
                     })
                     .eq('id', authData.user.id);
 

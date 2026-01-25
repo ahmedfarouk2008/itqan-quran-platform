@@ -115,6 +115,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             // Convert username to internal email
             const internalEmail = usernameToEmail(data.username);
+            console.log('Attempting signup with:', { email: internalEmail, name: data.name, username: data.username });
 
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: internalEmail,
@@ -130,6 +131,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             });
 
             if (authError) {
+                console.error('Supabase Auth Error:', authError);
                 // Make error message more user-friendly
                 if (authError.message.includes('already registered')) {
                     return { error: new Error('اسم المستخدم مستخدم بالفعل') };
@@ -137,22 +139,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return { error: authError };
             }
 
+            console.log('Auth signup successful:', authData);
+
             // Update profile with username
             if (authData.user) {
-                await supabase
+                const { error: updateError } = await supabase
                     .from('profiles')
                     .update({
                         name: data.name,
                         phone: data.phone || null,
+                        username: data.username,
                     })
                     .eq('id', authData.user.id);
 
+                if (updateError) {
+                    console.error('Profile update error:', updateError);
+                }
+
                 const userProfile = await fetchProfile(authData.user.id);
+                console.log('Fetched profile:', userProfile);
                 setProfile(userProfile);
             }
 
             return { error: null };
         } catch (error) {
+            console.error('Signup catch error:', error);
             return { error: error as Error };
         } finally {
             setIsLoading(false);

@@ -62,35 +62,31 @@
 .mascot-svg {
     width: 100%;
     height: 100%;
-    overflow: visible;
-}
-
-/* Eye Movement */
-.eyes-group {
-    transition: transform 0.1s ease-out;
+    overflow: visible !important;
+    /* Ensure hands are seen */
 }
 
 /* Hands Animation */
 .hand-left,
 .hand-right {
     transition: transform 0.3s cubic-bezier(0.3, 0.05, 0.2, 1.3);
-    /* Softer bounce */
     transform-origin: center bottom;
-    transform: translateY(150px);
-    /* Start lower down */
+    transform: translateY(120px) !important;
+    /* Start completely hidden */
+    fill: #047857;
 }
 
 /* State: Blind (Covering Eyes) */
 .mascot-container.blind .hand-left,
 .mascot-container.blind .hand-right {
-    transform: translateY(10px) rotate(0deg);
-    /* Improved target position */
+    transform: translateY(15px) rotate(0deg) !important;
+    /* Move up to cover eyes - FORCE */
 }
 
 /* State: Peeking (One eye open) */
 .mascot-container.blind.peeking .hand-right {
-    transform: translateY(50px);
-    /* Lower right hand slightly */
+    transform: translateY(60px) !important;
+    /* Lower right hand */
 }
 
 /* ==============================================
@@ -160,21 +156,23 @@
 .form-input {
     width: 100%;
     padding: 12px 14px;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    /* Gray-300: Visible but light */
+    background: #ffffff !important;
+    border: 2px solid #e5e7eb !important;
+    /* Force visible border */
     border-radius: 12px;
     font-size: 0.95rem;
     transition: all 0.2s ease;
     text-align: right;
-    color: #1f2937;
+    color: #1f2937 !important;
+    position: relative;
+    z-index: 5;
 }
 
 .form-input:focus {
-    background: #ffffff;
-    border-color: #10b981;
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    background: #ffffff !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
+    outline: none !important;
 }
 
 .input-with-icon {

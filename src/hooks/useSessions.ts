@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import type { Session } from '../lib/database.types';
+import { db, Session } from '../lib/firebase';
+import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 // ==============================================
@@ -47,17 +47,19 @@ export const useSessions = (): UseSessionsReturn => {
             const isTeacher = profile?.role === 'teacher';
             const column = isTeacher ? 'teacher_id' : 'student_id';
 
-            const { data, error: fetchError } = await supabase
-                .from('sessions')
-                .select('*')
-                .eq(column, user.id)
-                .order('scheduled_at', { ascending: true });
+            const q = query(
+                collection(db, 'sessions'),
+                where(column, '==', user.uid), // user.id in Supabase, user.uid in Firebase
+                orderBy('scheduled_at', 'asc')
+            );
 
-            if (fetchError) {
-                throw fetchError;
-            }
+            const querySnapshot = await getDocs(q);
+            const sessionsData: Session[] = [];
+            querySnapshot.forEach((doc) => {
+                sessionsData.push({ ...doc.data(), id: doc.id } as Session);
+            });
 
-            setSessions(data || []);
+            setSessions(sessionsData);
         } catch (err) {
             setError(err as Error);
             console.error('Error fetching sessions:', err);
@@ -72,27 +74,30 @@ export const useSessions = (): UseSessionsReturn => {
 
     // Subscribe to real-time updates
     useEffect(() => {
-        if (!user) return;
+        if (!user || !profile) return;
 
-        const channel = supabase
-            .channel('sessions-changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'sessions',
-                },
-                () => {
-                    fetchSessions();
-                }
-            )
-            .subscribe();
+        const isTeacher = profile.role === 'teacher';
+        const column = isTeacher ? 'teacher_id' : 'student_id';
+
+        const q = query(
+            collection(db, 'sessions'),
+            where(column, '==', user.uid)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            // Re-fetching full list or merging changes. 
+            // To simplify and ensure ordering, we can just re-fetch or map changes.
+            // Mapping changes properly:
+            const changes = snapshot.docChanges();
+            if (changes.length > 0) {
+                fetchSessions();
+            }
+        });
 
         return () => {
-            supabase.removeChannel(channel);
+            unsubscribe();
         };
-    }, [user, fetchSessions]);
+    }, [user, profile, fetchSessions]);
 
     const upcomingSessions = sessions.filter(
         s => new Date(s.scheduled_at) > new Date() && s.status !== 'ملغاة' && s.status !== 'مكتملة'
@@ -108,16 +113,15 @@ export const useSessions = (): UseSessionsReturn => {
         }
 
         try {
-            const { error: insertError } = await supabase
-                .from('sessions')
-                .insert({
-                    student_id: user.id,
-                    ...data,
-                });
+            const newSessionData = {
+                student_id: user.uid,
+                ...data,
+                created_at: new Date().toISOString(),
+                status: 'قيد المراجعة', // Default status logic inferred
+                summary: null
+            };
 
-            if (insertError) {
-                return { error: insertError };
-            }
+            await addDoc(collection(db, 'sessions'), newSessionData);
 
             await fetchSessions();
             return { error: null };
@@ -128,14 +132,8 @@ export const useSessions = (): UseSessionsReturn => {
 
     const updateSession = async (id: string, updates: Partial<Session>): Promise<{ error: Error | null }> => {
         try {
-            const { error: updateError } = await supabase
-                .from('sessions')
-                .update(updates)
-                .eq('id', id);
-
-            if (updateError) {
-                return { error: updateError };
-            }
+            const docRef = doc(db, 'sessions', id);
+            await updateDoc(docRef, updates);
 
             await fetchSessions();
             return { error: null };

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import type { Message } from '../lib/database.types';
+import { db, Message } from '../lib/firebase';
+import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, doc, onSnapshot, or, and } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 // ==============================================
@@ -35,30 +35,44 @@ export const useMessages = (conversationPartnerId?: string): UseMessagesReturn =
             setIsLoading(true);
             setError(null);
 
-            let query = supabase
-                .from('messages')
-                .select('*')
-                .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-                .order('created_at', { ascending: true });
+            let q;
 
-            // Filter by conversation partner if specified
             if (conversationPartnerId) {
-                query = supabase
-                    .from('messages')
-                    .select('*')
-                    .or(
-                        `and(sender_id.eq.${user.id},receiver_id.eq.${conversationPartnerId}),and(sender_id.eq.${conversationPartnerId},receiver_id.eq.${user.id})`
-                    )
-                    .order('created_at', { ascending: true });
+                // Fetch messages between user and partner (both directions)
+                q = query(
+                    collection(db, 'messages'),
+                    or(
+                        and(where('sender_id', '==', user.uid), where('receiver_id', '==', conversationPartnerId)),
+                        and(where('sender_id', '==', conversationPartnerId), where('receiver_id', '==', user.uid))
+                    ),
+                    orderBy('created_at', 'asc')
+                );
+            } else {
+                // Fetch all messages involving the user
+                q = query(
+                    collection(db, 'messages'),
+                    or(
+                        where('sender_id', '==', user.uid),
+                        where('receiver_id', '==', user.uid)
+                    ),
+                    orderBy('created_at', 'asc')
+                );
             }
 
-            const { data, error: fetchError } = await query;
+            // Note: 'or' queries with different fields might require a composite index in Firestore.
+            // If that fails, might need to split queries or do client-side merging for simple cases. 
+            // However, Firestore 'or' is generally supported now.
 
-            if (fetchError) {
-                throw fetchError;
-            }
+            const querySnapshot = await getDocs(q);
+            const messagesData: Message[] = [];
+            querySnapshot.forEach((doc) => {
+                // Include doc ID if not in data, but Message type has 'id'. 
+                // Firestore data doesn't include ID by default unless stored in field.
+                // We should assume we map it.
+                messagesData.push({ ...doc.data(), id: doc.id } as Message);
+            });
 
-            setMessages(data || []);
+            setMessages(messagesData);
         } catch (err) {
             setError(err as Error);
             console.error('Error fetching messages:', err);
@@ -75,28 +89,35 @@ export const useMessages = (conversationPartnerId?: string): UseMessagesReturn =
     useEffect(() => {
         if (!user) return;
 
-        const channel = supabase
-            .channel('messages-changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `receiver_id=eq.${user.id}`,
-                },
-                (payload) => {
-                    setMessages(prev => [...prev, payload.new as Message]);
+        // Simplified subscription: just listen to incoming messages for the user
+        // Ref: filter: receiver_id=eq.user.id
+        const q = query(
+            collection(db, 'messages'),
+            where('receiver_id', '==', user.uid)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'added') {
+                    // Only add if it's not already in list (though snapshot usually gives full state or delta)
+                    // If we blindly add, we might duplicate if fetch happened.
+                    // But here we are just listening for NEW incomings locally to append? 
+                    // Better to just re-fetch or merge safely.
+                    const newMessage = { ...change.doc.data(), id: change.doc.id } as Message;
+                    setMessages(prev => {
+                        if (prev.find(m => m.id === newMessage.id)) return prev;
+                        return [...prev, newMessage];
+                    });
                 }
-            )
-            .subscribe();
+            });
+        });
 
         return () => {
-            supabase.removeChannel(channel);
+            unsubscribe();
         };
     }, [user]);
 
-    const unreadCount = messages.filter(m => m.receiver_id === user?.id && !m.is_read).length;
+    const unreadCount = messages.filter(m => m.receiver_id === user?.uid && !m.is_read).length;
 
     const sendMessage = async (receiverId: string, content: string): Promise<{ error: Error | null }> => {
         if (!user) {
@@ -104,17 +125,15 @@ export const useMessages = (conversationPartnerId?: string): UseMessagesReturn =
         }
 
         try {
-            const { error: insertError } = await supabase
-                .from('messages')
-                .insert({
-                    sender_id: user.id,
-                    receiver_id: receiverId,
-                    content,
-                });
+            const newMessageData = {
+                sender_id: user.uid,
+                receiver_id: receiverId,
+                content,
+                is_read: false,
+                created_at: new Date().toISOString()
+            };
 
-            if (insertError) {
-                return { error: insertError };
-            }
+            await addDoc(collection(db, 'messages'), newMessageData);
 
             await fetchMessages();
             return { error: null };
@@ -125,14 +144,8 @@ export const useMessages = (conversationPartnerId?: string): UseMessagesReturn =
 
     const markAsRead = async (messageId: string): Promise<{ error: Error | null }> => {
         try {
-            const { error: updateError } = await supabase
-                .from('messages')
-                .update({ is_read: true })
-                .eq('id', messageId);
-
-            if (updateError) {
-                return { error: updateError };
-            }
+            const msgRef = doc(db, 'messages', messageId);
+            await updateDoc(msgRef, { is_read: true });
 
             setMessages(prev =>
                 prev.map(m => (m.id === messageId ? { ...m, is_read: true } : m))
@@ -150,16 +163,22 @@ export const useMessages = (conversationPartnerId?: string): UseMessagesReturn =
         }
 
         try {
-            const { error: updateError } = await supabase
-                .from('messages')
-                .update({ is_read: true })
-                .eq('sender_id', senderId)
-                .eq('receiver_id', user.id);
+            // Firestore doesn't support updateMany directly. Need to query and update batch.
+            const q = query(
+                collection(db, 'messages'),
+                where('sender_id', '==', senderId),
+                where('receiver_id', '==', user.uid),
+                where('is_read', '==', false)
+            );
 
-            if (updateError) {
-                return { error: updateError };
-            }
+            const snapshot = await getDocs(q);
+            const updatePromises: Promise<void>[] = [];
 
+            snapshot.forEach((document) => {
+                updatePromises.push(updateDoc(document.ref, { is_read: true }));
+            });
+
+            await Promise.all(updatePromises);
             await fetchMessages();
             return { error: null };
         } catch (err) {

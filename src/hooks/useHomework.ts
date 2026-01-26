@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import type { Homework } from '../lib/database.types';
+import { db, Homework } from '../lib/firebase';
+import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 // ==============================================
@@ -62,17 +62,19 @@ export const useHomework = (): UseHomeworkReturn => {
             const isTeacher = profile?.role === 'teacher';
             const column = isTeacher ? 'teacher_id' : 'student_id';
 
-            const { data, error: fetchError } = await supabase
-                .from('homework')
-                .select('*')
-                .eq(column, user.id)
-                .order('due_date', { ascending: true });
+            const q = query(
+                collection(db, 'homework'),
+                where(column, '==', user.uid),
+                orderBy('due_date', 'asc')
+            );
 
-            if (fetchError) {
-                throw fetchError;
-            }
+            const querySnapshot = await getDocs(q);
+            const homeworkData: Homework[] = [];
+            querySnapshot.forEach((doc) => {
+                homeworkData.push({ ...doc.data(), id: doc.id } as Homework);
+            });
 
-            setHomework(data || []);
+            setHomework(homeworkData);
         } catch (err) {
             setError(err as Error);
             console.error('Error fetching homework:', err);
@@ -87,27 +89,27 @@ export const useHomework = (): UseHomeworkReturn => {
 
     // Subscribe to real-time updates
     useEffect(() => {
-        if (!user) return;
+        if (!user || !profile) return;
 
-        const channel = supabase
-            .channel('homework-changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'homework',
-                },
-                () => {
-                    fetchHomework();
-                }
-            )
-            .subscribe();
+        const isTeacher = profile.role === 'teacher';
+        const column = isTeacher ? 'teacher_id' : 'student_id';
+
+        const q = query(
+            collection(db, 'homework'),
+            where(column, '==', user.uid)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const changes = snapshot.docChanges();
+            if (changes.length > 0) {
+                fetchHomework();
+            }
+        });
 
         return () => {
-            supabase.removeChannel(channel);
+            unsubscribe();
         };
-    }, [user, fetchHomework]);
+    }, [user, profile, fetchHomework]);
 
     const pendingHomework = homework.filter(h => h.status === 'لم يبدأ');
     const submittedHomework = homework.filter(h => h.status === 'تم الإرسال');
@@ -115,17 +117,11 @@ export const useHomework = (): UseHomeworkReturn => {
 
     const submitHomework = async (id: string, submission: SubmissionData): Promise<{ error: Error | null }> => {
         try {
-            const { error: updateError } = await supabase
-                .from('homework')
-                .update({
-                    submission,
-                    status: 'تم الإرسال',
-                })
-                .eq('id', id);
-
-            if (updateError) {
-                return { error: updateError };
-            }
+            const docRef = doc(db, 'homework', id);
+            await updateDoc(docRef, {
+                submission,
+                status: 'تم الإرسال',
+            });
 
             await fetchHomework();
             return { error: null };
@@ -140,16 +136,16 @@ export const useHomework = (): UseHomeworkReturn => {
         }
 
         try {
-            const { error: insertError } = await supabase
-                .from('homework')
-                .insert({
-                    teacher_id: user.id,
-                    ...data,
-                });
+            const newHomeworkData = {
+                teacher_id: user.uid,
+                ...data,
+                created_at: new Date().toISOString(),
+                status: 'لم يبدأ',
+                submission: null,
+                feedback: null
+            };
 
-            if (insertError) {
-                return { error: insertError };
-            }
+            await addDoc(collection(db, 'homework'), newHomeworkData);
 
             await fetchHomework();
             return { error: null };
@@ -160,17 +156,11 @@ export const useHomework = (): UseHomeworkReturn => {
 
     const reviewHomework = async (id: string, feedback: FeedbackData): Promise<{ error: Error | null }> => {
         try {
-            const { error: updateError } = await supabase
-                .from('homework')
-                .update({
-                    feedback,
-                    status: 'تم المراجعة',
-                })
-                .eq('id', id);
-
-            if (updateError) {
-                return { error: updateError };
-            }
+            const docRef = doc(db, 'homework', id);
+            await updateDoc(docRef, {
+                feedback,
+                status: 'تم المراجعة',
+            });
 
             await fetchHomework();
             return { error: null };

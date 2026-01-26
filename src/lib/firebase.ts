@@ -1,26 +1,27 @@
-import { createClient } from '@supabase/supabase-js';
 
-// ==============================================
-// Supabase Client Configuration
-// ==============================================
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const firebaseConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
+};
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables. Check your .env.local file.');
-}
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
-// Create client without strict typing to avoid build errors
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-    },
-});
+// Initialize services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
-// Type exports for convenience
+// Types migrated from Supabase
 export type Profile = {
     id: string;
     created_at: string;

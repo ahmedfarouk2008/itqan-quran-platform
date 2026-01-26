@@ -1,16 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase, Profile } from '../lib/supabase';
+import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, updateProfile as updateAuthProfile } from 'firebase/auth';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { auth, db, Profile, Session as AppSession } from '../lib/firebase';
 
 // ==============================================
-// Auth Context - إدارة حالة المستخدم مع Supabase
+// Auth Context - إدارة حالة المستخدم مع Firebase
 // Using Username instead of Email
 // ==============================================
 
 interface AuthContextType {
     user: User | null;
     profile: Profile | null;
-    session: Session | null;
+    session: AppSession | null; // Using AppSession to avoid conflict if any
     isLoading: boolean;
     isAuthenticated: boolean;
     signUp: (data: SignUpData) => Promise<{ error: Error | null }>;
@@ -38,24 +39,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
+    const [session, setSession] = useState<AppSession | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     // Fetch user profile from database
     const fetchProfile = async (userId: string) => {
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+            const docRef = doc(db, 'users', userId);
+            const docSnap = await getDoc(docRef);
 
-            if (error) {
-                console.error('Error fetching profile:', error);
+            if (docSnap.exists()) {
+                return docSnap.data() as Profile;
+            } else {
+                console.log('No such profile!');
                 return null;
             }
-
-            return data as Profile;
         } catch (error) {
             console.error('Error fetching profile:', error);
             return null;
@@ -74,65 +72,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
         }, 4000);
 
-        // Get initial session
-        const initAuth = async () => {
-            try {
-                const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (!mounted) return;
 
-                if (mounted && initialSession) {
-                    setSession(initialSession);
-                    setUser(initialSession.user);
-                    const userProfile = await fetchProfile(initialSession.user.id);
-                    if (mounted) {
-                        setProfile(userProfile);
-                    }
-                }
-            } catch (error) {
-                console.error('Error initializing auth:', error);
-            } finally {
+            console.log('Auth state changed:', firebaseUser ? 'Logged In' : 'Logged Out');
+            setUser(firebaseUser);
+
+            if (firebaseUser) {
+                const userProfile = await fetchProfile(firebaseUser.uid);
                 if (mounted) {
-                    setIsLoading(false);
-                    clearTimeout(loadingTimeout);
+                    setProfile(userProfile);
+                }
+                // Reset session if needed, or fetch active session logic here if applicable
+                // setSession(null); 
+            } else {
+                if (mounted) {
+                    setProfile(null);
+                    setSession(null);
                 }
             }
-        };
 
-        if (isLoading) {
-            initAuth();
-        }
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, newSession) => {
-                if (!mounted) return;
-
-                console.log('Auth state changed:', event);
-
-                setSession(newSession);
-                setUser(newSession?.user ?? null);
-
-                if (newSession?.user) {
-                    const userProfile = await fetchProfile(newSession.user.id);
-                    if (mounted) {
-                        setProfile(userProfile);
-                    }
-                } else {
-                    if (mounted) {
-                        setProfile(null);
-                    }
-                }
-
-                if (mounted) {
-                    setIsLoading(false);
-                    clearTimeout(loadingTimeout);
-                }
+            if (mounted) {
+                setIsLoading(false);
+                clearTimeout(loadingTimeout);
             }
-        );
+        });
 
         return () => {
             mounted = false;
             clearTimeout(loadingTimeout);
-            subscription.unsubscribe();
+            unsubscribe();
         };
     }, []);
 
@@ -145,57 +114,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const internalEmail = usernameToEmail(data.username);
             console.log('Attempting signup with:', { email: internalEmail, name: data.name, username: data.username });
 
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: internalEmail,
-                password: data.password,
-                options: {
-                    data: {
-                        name: data.name,
-                        username: data.username,
-                        role: data.role,
-                        phone: data.phone,
-                    },
-                },
+            const userCredential = await createUserWithEmailAndPassword(auth, internalEmail, data.password);
+            const user = userCredential.user;
+
+            // Update Auth Profile
+            await updateAuthProfile(user, {
+                displayName: data.name
             });
 
-            if (authError) {
-                console.error('Supabase Auth Error:', authError);
-                // Make error message more user-friendly
-                if (authError.message.includes('already registered')) {
-                    return { error: new Error('اسم المستخدم مستخدم بالفعل') };
-                }
-                return { error: authError };
-            }
+            // Create Profile in Firestore
+            const newProfile: Profile = {
+                id: user.uid,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                name: data.name,
+                email: internalEmail,
+                phone: data.phone || null,
+                role: data.role as 'student' | 'teacher' | 'admin',
+                avatar_url: null,
+                level: null,
+                goals: null,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                bio: null,
+                specialty: null,
+                rating: null
+            };
 
-            console.log('Auth signup successful:', authData);
+            await setDoc(doc(db, 'users', user.uid), newProfile);
 
-            // Update profile with username
-            if (authData.user) {
-                const { error: updateError } = await supabase
-                    .from('profiles')
-                    .upsert({
-                        id: authData.user.id,
-                        name: data.name,
-                        phone: data.phone || null,
-                        username: data.username,
-                        role: data.role, // Ensure role is also set
-                        email: internalEmail, // Ensure email is set
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', authData.user.id);
-
-                if (updateError) {
-                    console.error('Profile update error:', updateError);
-                }
-
-                const userProfile = await fetchProfile(authData.user.id);
-                console.log('Fetched profile:', userProfile);
-                setProfile(userProfile);
-            }
+            console.log('Auth signup successful:', user);
+            const userProfile = await fetchProfile(user.uid);
+            setProfile(userProfile);
 
             return { error: null };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Signup catch error:', error);
+            // Make error message more user-friendly
+            if (error.code === 'auth/email-already-in-use') {
+                return { error: new Error('اسم المستخدم مستخدم بالفعل') };
+            }
             return { error: error as Error };
         } finally {
             setIsLoading(false);
@@ -210,22 +167,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // Convert username to internal email
             const internalEmail = usernameToEmail(username);
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: internalEmail,
-                password,
-            });
-
-            if (error) {
-                return { error: new Error('اسم المستخدم أو كلمة المرور غير صحيحة') };
-            }
-
-            if (data.user) {
-                const userProfile = await fetchProfile(data.user.id);
+            const userCredential = await signInWithEmailAndPassword(auth, internalEmail, password);
+            if (userCredential.user) {
+                const userProfile = await fetchProfile(userCredential.user.uid);
                 setProfile(userProfile);
             }
 
             return { error: null };
-        } catch (error) {
+        } catch (error: any) {
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                return { error: new Error('اسم المستخدم أو كلمة المرور غير صحيحة') };
+            }
             return { error: error as Error };
         } finally {
             setIsLoading(false);
@@ -236,7 +188,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const signOut = async (): Promise<void> => {
         try {
             setIsLoading(true);
-            await supabase.auth.signOut();
+            await firebaseSignOut(auth);
             setUser(null);
             setProfile(null);
             setSession(null);
@@ -254,17 +206,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update(updates)
-                .eq('id', user.id);
-
-            if (error) {
-                return { error };
-            }
+            const docRef = doc(db, 'users', user.uid);
+            await updateDoc(docRef, updates);
 
             // Refresh profile
-            const updatedProfile = await fetchProfile(user.id);
+            const updatedProfile = await fetchProfile(user.uid);
             setProfile(updatedProfile);
 
             return { error: null };
@@ -283,7 +229,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         profile,
         session,
         isLoading,
-        isAuthenticated: !!user && !!profile,
+        isAuthenticated: !!user, // Adjusted to just user check as profile might load slightly later? Or keep !!user && !!profile
         signUp,
         signIn,
         signOut,

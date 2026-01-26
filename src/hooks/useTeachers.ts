@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import type { Profile, TeacherSlot } from '../lib/database.types';
+import { db, Profile, TeacherSlot } from '../lib/firebase';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 
 // ==============================================
 // Teachers Hook - إدارة المعلمات
@@ -24,17 +24,19 @@ export const useTeachers = (): UseTeachersReturn => {
             setIsLoading(true);
             setError(null);
 
-            const { data, error: fetchError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'teacher')
-                .order('rating', { ascending: false });
+            const q = query(
+                collection(db, 'users'), // Changed from 'profiles' to 'users' based on AuthContext
+                where('role', '==', 'teacher'),
+                orderBy('rating', 'desc')
+            );
 
-            if (fetchError) {
-                throw fetchError;
-            }
+            const querySnapshot = await getDocs(q);
+            const teachersData: Profile[] = [];
+            querySnapshot.forEach((doc) => {
+                teachersData.push(doc.data() as Profile);
+            });
 
-            setTeachers(data || []);
+            setTeachers(teachersData);
         } catch (err) {
             setError(err as Error);
             console.error('Error fetching teachers:', err);
@@ -49,19 +51,21 @@ export const useTeachers = (): UseTeachersReturn => {
 
     const getTeacherSlots = async (teacherId: string): Promise<TeacherSlot[]> => {
         try {
-            const { data, error: fetchError } = await supabase
-                .from('teacher_slots')
-                .select('*')
-                .eq('teacher_id', teacherId)
-                .eq('is_available', true)
-                .order('day_of_week', { ascending: true })
-                .order('start_time', { ascending: true });
+            const q = query(
+                collection(db, 'teacher_slots'),
+                where('teacher_id', '==', teacherId),
+                where('is_available', '==', true),
+                orderBy('day_of_week', 'asc'),
+                orderBy('start_time', 'asc')
+            );
 
-            if (fetchError) {
-                throw fetchError;
-            }
+            const querySnapshot = await getDocs(q);
+            const slotsData: TeacherSlot[] = [];
+            querySnapshot.forEach((doc) => {
+                slotsData.push(doc.data() as TeacherSlot);
+            });
 
-            return data || [];
+            return slotsData;
         } catch (err) {
             console.error('Error fetching teacher slots:', err);
             return [];

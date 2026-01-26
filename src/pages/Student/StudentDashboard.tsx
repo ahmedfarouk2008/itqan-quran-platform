@@ -23,7 +23,7 @@ interface StudentDashboardProps {
     onNavigate: (tab: string) => void;
 }
 
-// Mock data - will be replaced with real data from Supabase
+// Mock data - will be replaced with real data from Firebase
 const mockNextSession: Session | null = {
     id: '1',
     studentId: '1',

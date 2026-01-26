@@ -93,7 +93,7 @@ const MessagesPage: React.FC<MessagesPageProps> = () => {
 
     const handleSendMessage = () => {
         if (!messageInput.trim() || !selectedConversation) return;
-        // In real app, send message via Supabase
+        // In real app, send message via Firebase
         setMessageInput('');
         scrollToBottom();
     };

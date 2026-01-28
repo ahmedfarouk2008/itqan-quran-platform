@@ -239,9 +239,6 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                                     <span className="duration">{session.duration} دقيقة</span>
                                 </div>
                                 <div className="session-info">
-                                    <div className="student-avatar">
-                                        {session.studentName.charAt(0)}
-                                    </div>
                                     <div className="session-details">
                                         <span className="student-name">{session.studentName}</span>
                                         <span className="session-type">

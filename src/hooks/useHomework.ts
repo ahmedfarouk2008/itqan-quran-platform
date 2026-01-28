@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db, Homework } from '../lib/firebase';
-import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 // ==============================================
@@ -64,8 +64,7 @@ export const useHomework = (): UseHomeworkReturn => {
 
             const q = query(
                 collection(db, 'homework'),
-                where(column, '==', user.uid),
-                orderBy('due_date', 'asc')
+                where(column, '==', user.uid)
             );
 
             const querySnapshot = await getDocs(q);
@@ -73,6 +72,9 @@ export const useHomework = (): UseHomeworkReturn => {
             querySnapshot.forEach((doc) => {
                 homeworkData.push({ ...doc.data(), id: doc.id } as Homework);
             });
+
+            // Sort client-side to avoid needing a composite index
+            homeworkData.sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
             setHomework(homeworkData);
         } catch (err) {

@@ -11,12 +11,14 @@ import StudentDashboard from './pages/Student/StudentDashboard';
 import SessionsPage from './pages/Student/SessionsPage';
 import LearningPage from './pages/Student/LearningPage';
 import HomeworkPage from './pages/Student/HomeworkPage';
-import MessagesPage from './pages/Shared/MessagesPage';
+import StudentProfileSettings from './pages/Student/StudentProfileSettings';
+
 import {
     TeacherDashboard,
     TeacherStudentsPage,
     TeacherSessionsPage,
     TeacherHomeworkPage,
+    TeacherProfileSettings,
 } from './pages/Teacher';
 import AppLayout from './components/Layout/AppLayout';
 
@@ -202,8 +204,9 @@ const AppContent: React.FC = () => {
                 return <LearningPage onNavigate={setActiveTab} />;
             case 'homework':
                 return <HomeworkPage onNavigate={setActiveTab} />;
-            case 'messages':
-                return <MessagesPage onNavigate={setActiveTab} />;
+            case 'settings':
+                return <StudentProfileSettings />;
+
             default:
                 return <StudentDashboard user={layoutUser} onNavigate={setActiveTab} />;
         }
@@ -223,8 +226,7 @@ const AppContent: React.FC = () => {
             case 'teacher-homework':
             case 'homework':
                 return <TeacherHomeworkPage onNavigate={setActiveTab} />;
-            case 'messages':
-                return <MessagesPage onNavigate={setActiveTab} />;
+
             default:
                 return <TeacherDashboard onNavigate={setActiveTab} />;
         }

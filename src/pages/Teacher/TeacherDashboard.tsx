@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Users,
     Calendar,
     BookOpen,
     Clock,
-    TrendingUp,
-    Star,
-    MessageSquare,
-    Bell,
     ChevronLeft,
     Play,
-    CheckCircle,
     AlertCircle,
+    ChevronRight,
+    Loader2
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useSessions, useStudents, useHomework } from '../../hooks';
 import '../../styles/pages/teacher-dashboard.css';
 
 // ==============================================
@@ -23,141 +22,160 @@ interface TeacherDashboardProps {
     onNavigate: (page: string) => void;
 }
 
-// Demo data
-const dashboardStats = {
-    totalStudents: 24,
-    activeStudents: 18,
-    todaySessions: 5,
-    pendingHomework: 12,
-    completedSessions: 156,
-    averageRating: 4.8,
-};
-
-const upcomingSessions = [
-    {
-        id: '1',
-        studentName: 'أحمد محمد',
-        studentAvatar: null,
-        time: '10:00 ص',
-        duration: 45,
-        type: 'حفظ',
-        surah: 'سورة البقرة',
-        isNext: true,
-    },
-    {
-        id: '2',
-        studentName: 'فاطمة علي',
-        studentAvatar: null,
-        time: '11:00 ص',
-        duration: 30,
-        type: 'مراجعة',
-        surah: 'سورة آل عمران',
-        isNext: false,
-    },
-    {
-        id: '3',
-        studentName: 'محمد أحمد',
-        studentAvatar: null,
-        time: '12:30 م',
-        duration: 45,
-        type: 'تجويد',
-        surah: 'أحكام النون الساكنة',
-        isNext: false,
-    },
-];
-
-const recentActivities = [
-    {
-        id: '1',
-        type: 'homework_submitted',
-        studentName: 'سارة أحمد',
-        description: 'أرسلت واجب حفظ سورة الكهف',
-        time: 'منذ 10 دقائق',
-    },
-    {
-        id: '2',
-        type: 'session_completed',
-        studentName: 'يوسف محمد',
-        description: 'أكمل جلسة المراجعة بنجاح',
-        time: 'منذ ساعة',
-    },
-    {
-        id: '3',
-        type: 'new_message',
-        studentName: 'نور الدين',
-        description: 'أرسل رسالة جديدة',
-        time: 'منذ ساعتين',
-    },
-];
-
-const pendingReviews = [
-    {
-        id: '1',
-        studentName: 'أحمد محمد',
-        type: 'تسميع صوتي',
-        surah: 'سورة يس',
-        submittedAt: 'منذ 30 دقيقة',
-    },
-    {
-        id: '2',
-        studentName: 'فاطمة علي',
-        type: 'واجب حفظ',
-        surah: 'سورة الرحمن',
-        submittedAt: 'منذ ساعة',
-    },
-    {
-        id: '3',
-        studentName: 'محمد أحمد',
-        type: 'تسميع صوتي',
-        surah: 'سورة الواقعة',
-        submittedAt: 'منذ 3 ساعات',
-    },
-];
+// ... imports remain the same
 
 const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
-    const getActivityIcon = (type: string) => {
-        switch (type) {
-            case 'homework_submitted':
-                return <BookOpen size={18} />;
-            case 'session_completed':
-                return <CheckCircle size={18} />;
-            case 'new_message':
-                return <MessageSquare size={18} />;
-            default:
-                return <Bell size={18} />;
+    const { profile } = useAuth();
+    const { upcomingSessions: firebaseSessions, sessions: allSessions, isLoading: sessionsLoading } = useSessions();
+    const { students: firebaseStudents, isLoading: studentsLoading } = useStudents();
+    const { submittedHomework: firebasePending, isLoading: homeworkLoading } = useHomework();
+    const [currentDate] = useState(new Date());
+
+    const isLoading = sessionsLoading || studentsLoading || homeworkLoading;
+
+    // Compute real dashboard stats from Firebase data
+    const dashboardStats = useMemo(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const todaySessions = firebaseSessions.filter(s =>
+            s.scheduled_at.split('T')[0] === today
+        ).length;
+
+        const pendingHomeworkCount = firebasePending.length;
+
+        return {
+            totalStudents: firebaseStudents.length,
+            activeStudents: firebaseStudents.length, // All students are considered active for now
+            todaySessions: todaySessions,
+            pendingHomework: pendingHomeworkCount,
+        };
+    }, [firebaseStudents, firebaseSessions, firebasePending]);
+
+    // Map Firebase sessions to display format
+    const upcomingSessions = useMemo(() => {
+        return firebaseSessions.slice(0, 3).map((session, index) => {
+            const student = firebaseStudents.find(s => s.id === session.student_id);
+            return {
+                id: session.id,
+                studentName: student ? student.name : 'طالب/ة',
+                time: new Date(session.scheduled_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                duration: session.duration,
+                type: session.type,
+                surah: session.notes || 'غير محدد',
+                isNext: index === 0,
+            };
+        });
+    }, [firebaseSessions, firebaseStudents]);
+
+    // Map submitted homework (pending teacher review) to reviews
+    const pendingReviews = useMemo(() => {
+        return firebasePending.slice(0, 3).map(hw => {
+            const student = firebaseStudents.find(s => s.id === hw.student_id);
+            return {
+                id: hw.id,
+                studentName: student ? student.name : 'طالب/ة',
+                type: hw.type || 'حفظ',
+                surah: hw.title || 'غير محدد',
+                submittedAt: hw.created_at ? new Date(hw.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
+            };
+        });
+    }, [firebasePending, firebaseStudents]);
+
+    // Dynamic Date Formatting
+    const formattedDate = currentDate.toLocaleDateString('ar-EG', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+
+    // Weekly Calendar Helper
+    const renderWeeklyCalendar = () => {
+        const days = [];
+        const today = new Date();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay()); // Start from Sunday
+
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(startOfWeek);
+            date.setDate(startOfWeek.getDate() + i);
+            const isToday = date.getDate() === today.getDate();
+            const dayName = date.toLocaleDateString('ar-EG', { weekday: 'short' });
+            const dayNum = date.getDate();
+            const dateStr = date.toISOString().split('T')[0];
+
+            // Real sessions count per day
+            const sessionsCount = allSessions.filter(s => s.scheduled_at.startsWith(dateStr)).length;
+
+            days.push(
+                <div key={i} className={`calendar-day-widget ${isToday ? 'active' : ''}`}>
+                    <span className="day-name">{dayName}</span>
+                    <span className="day-num">{dayNum}</span>
+                    {sessionsCount > 0 && (
+                        <span className="session-dot" title={`${sessionsCount} جلسات`}></span>
+                    )}
+                </div>
+            );
         }
+        return days;
     };
 
+    if (isLoading) {
+        return (
+            <div className="teacher-dashboard animate-fadeIn">
+                <div className="loading-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', flexDirection: 'column', gap: '1rem' }}>
+                    <Loader2 size={48} className="animate-spin" style={{ color: 'var(--primary)' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>جاري تحميل البيانات...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="teacher-dashboard">
+        <div className="teacher-dashboard animate-fadeIn">
             {/* Header */}
             <div className="dashboard-header">
                 <div className="header-content">
-                    <h1>مرحباً، أستاذة نورة 👋</h1>
+                    <h1>مرحباً، {profile?.name || 'يا معلمة'} 👋</h1>
                     <p>لديك {dashboardStats.todaySessions} جلسات اليوم</p>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontFamily: 'monospace' }}>
+                        ID: {profile?.id}
+                    </div>
                 </div>
                 <div className="header-date">
-                    <span className="day">السبت</span>
-                    <span className="date">25 يناير 2026</span>
+                    <Calendar size={18} />
+                    <span>{formattedDate}</span>
+                </div>
+            </div>
+
+            {/* Weekly Calendar Widget */}
+            <div className="weekly-calendar-widget">
+                <div className="widget-header">
+                    <h3>جدول الأسبوع</h3>
+                    <div className="nav-arrows">
+                        <button><ChevronRight size={16} /></button>
+                        <button><ChevronLeft size={16} /></button>
+                    </div>
+                </div>
+                <div className="days-container">
+                    {renderWeeklyCalendar()}
                 </div>
             </div>
 
             {/* Stats Grid */}
             <div className="stats-grid">
-                <div className="stat-card students">
+                <div className="stat-card students" onClick={() => onNavigate('teacher-students')}>
                     <div className="stat-icon">
                         <Users size={24} />
                     </div>
                     <div className="stat-info">
                         <span className="stat-value">{dashboardStats.totalStudents}</span>
-                        <span className="stat-label">إجمالي الطالبات</span>
+                        <span className="stat-label">طالباتي</span>
                     </div>
-                    <div className="stat-badge">{dashboardStats.activeStudents} نشط</div>
                 </div>
 
-                <div className="stat-card sessions">
+                <div className="stat-card sessions" onClick={() => onNavigate('teacher-sessions')}>
                     <div className="stat-icon">
-                        <Calendar size={24} />
+                        <Clock size={24} />
                     </div>
                     <div className="stat-info">
                         <span className="stat-value">{dashboardStats.todaySessions}</span>
@@ -165,38 +183,19 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                     </div>
                 </div>
 
-                <div className="stat-card homework">
+                <div className="stat-card homework" onClick={() => onNavigate('teacher-homework')}>
                     <div className="stat-icon">
                         <BookOpen size={24} />
                     </div>
                     <div className="stat-info">
                         <span className="stat-value">{dashboardStats.pendingHomework}</span>
-                        <span className="stat-label">واجبات تنتظر المراجعة</span>
-                    </div>
-                </div>
-
-                <div className="stat-card rating">
-                    <div className="stat-icon">
-                        <Star size={24} />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{dashboardStats.averageRating}</span>
-                        <span className="stat-label">متوسط التقييم</span>
-                    </div>
-                    <div className="rating-stars">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                                key={star}
-                                size={14}
-                                fill={star <= Math.floor(dashboardStats.averageRating) ? '#f59e0b' : 'none'}
-                                stroke={star <= Math.floor(dashboardStats.averageRating) ? '#f59e0b' : '#d1d5db'}
-                            />
-                        ))}
+                        <span className="stat-label">المراجعة</span>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
+            {/* ... (rest of the render remains the same) */}
             <div className="dashboard-content">
                 {/* Today's Sessions */}
                 <div className="content-section sessions-section">
@@ -212,7 +211,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                     </div>
 
                     <div className="sessions-list">
-                        {upcomingSessions.map((session) => (
+                        {upcomingSessions.length === 0 ? (
+                            <div className="empty-state">
+                                <p>لا توجد جلسات قادمة اليوم</p>
+                            </div>
+                        ) : upcomingSessions.map((session) => (
                             <div key={session.id} className={`session-card ${session.isNext ? 'next' : ''}`}>
                                 {session.isNext && <div className="next-badge">التالية</div>}
                                 <div className="session-time">
@@ -230,9 +233,9 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                                         </span>
                                     </div>
                                 </div>
-                                <button className="start-session-btn">
+                                <button className="start-session-btn" onClick={() => onNavigate('teacher-sessions')}>
                                     <Play size={16} />
-                                    {session.isNext ? 'بدء الجلسة' : 'تفاصيل'}
+                                    {session.isNext ? 'بدء' : 'تفاصيل'}
                                 </button>
                             </div>
                         ))}
@@ -247,75 +250,32 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                             تنتظر المراجعة
                         </h2>
                         <button className="view-all-btn" onClick={() => onNavigate('teacher-homework')}>
-                            عرض الكل
+                            المزيد
                             <ChevronLeft size={16} />
                         </button>
                     </div>
 
                     <div className="reviews-list">
-                        {pendingReviews.map((review) => (
+                        {pendingReviews.length === 0 ? (
+                            <div className="empty-state">
+                                <p>لا يوجد واجبات للمراجعة</p>
+                            </div>
+                        ) : pendingReviews.map((review) => (
                             <div key={review.id} className="review-card">
                                 <div className="review-avatar">
                                     {review.studentName.charAt(0)}
                                 </div>
                                 <div className="review-info">
                                     <span className="student-name">{review.studentName}</span>
-                                    <span className="review-type">{review.type}</span>
-                                    <span className="review-surah">{review.surah}</span>
+                                    <span className="review-meta">{review.type} • {review.submittedAt}</span>
                                 </div>
-                                <div className="review-meta">
-                                    <span className="submitted-time">{review.submittedAt}</span>
-                                    <button className="review-btn">مراجعة</button>
-                                </div>
+                                <button className="review-btn" onClick={() => onNavigate('teacher-homework')}>
+                                    مراجعة
+                                </button>
                             </div>
                         ))}
                     </div>
                 </div>
-
-                {/* Recent Activity */}
-                <div className="content-section activity-section">
-                    <div className="section-header">
-                        <h2>
-                            <TrendingUp size={20} />
-                            آخر النشاطات
-                        </h2>
-                    </div>
-
-                    <div className="activity-list">
-                        {recentActivities.map((activity) => (
-                            <div key={activity.id} className="activity-item">
-                                <div className={`activity-icon ${activity.type}`}>
-                                    {getActivityIcon(activity.type)}
-                                </div>
-                                <div className="activity-info">
-                                    <span className="activity-student">{activity.studentName}</span>
-                                    <span className="activity-description">{activity.description}</span>
-                                </div>
-                                <span className="activity-time">{activity.time}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="quick-actions">
-                <button className="quick-action-btn primary" onClick={() => onNavigate('teacher-sessions')}>
-                    <Calendar size={20} />
-                    إدارة الجلسات
-                </button>
-                <button className="quick-action-btn" onClick={() => onNavigate('teacher-students')}>
-                    <Users size={20} />
-                    إدارة الطالبات
-                </button>
-                <button className="quick-action-btn" onClick={() => onNavigate('teacher-homework')}>
-                    <BookOpen size={20} />
-                    مراجعة الواجبات
-                </button>
-                <button className="quick-action-btn" onClick={() => onNavigate('messages')}>
-                    <MessageSquare size={20} />
-                    الرسائل
-                </button>
             </div>
         </div>
     );

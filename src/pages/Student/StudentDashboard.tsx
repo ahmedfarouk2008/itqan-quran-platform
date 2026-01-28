@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     Calendar,
     Clock,
     BookOpen,
     Video,
     ChevronLeft,
-    Flame,
-    Star,
-    Mic,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    Loader2
 } from 'lucide-react';
-import { User, Session, Homework, SessionStatus, HomeworkStatus } from '../../types';
+import { User, HomeworkStatus } from '../../types';
+import { useSessions, useHomework, useTeachers } from '../../hooks';
 import '../../styles/pages/student-dashboard.css';
 
 // ==============================================
@@ -23,31 +22,32 @@ interface StudentDashboardProps {
     onNavigate: (tab: string) => void;
 }
 
-// Mock data - will be replaced with real data from Firebase
-const mockNextSession: Session | null = {
-    id: '1',
-    studentId: '1',
-    teacherId: '1',
-    type: 'حفظ' as any,
-    status: SessionStatus.CONFIRMED,
-    duration: 45,
-    scheduledAt: new Date(Date.now() + 3600000 * 4).toISOString(), // 4 hours from now
-    createdAt: new Date().toISOString(),
-};
-
-const mockHomework: Homework | null = {
-    id: '1',
-    studentId: '1',
-    teacherId: '1',
-    title: 'تسميع سورة الملك ١-١٥',
-    description: 'تسميع الآيات مع مراعاة أحكام التجويد',
-    type: 'حفظ' as any,
-    dueDate: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days from now
-    status: HomeworkStatus.NOT_STARTED,
-    createdAt: new Date().toISOString(),
-};
-
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate }) => {
+    const { upcomingSessions, isLoading: sessionsLoading } = useSessions();
+    const { pendingHomework, isLoading: homeworkLoading } = useHomework();
+    const { teachers, isLoading: teachersLoading } = useTeachers();
+
+    const isLoading = sessionsLoading || homeworkLoading || teachersLoading;
+
+    // Get next session
+    const nextSession = useMemo(() => {
+        if (!upcomingSessions || upcomingSessions.length === 0) return null;
+        const session = upcomingSessions[0]; // Assuming sorted by date in hook
+        // Find teacher
+        const teacher = teachers.find(t => t.id === session.teacher_id);
+
+        return {
+            ...session,
+            teacherName: teacher ? teacher.name : 'المعلمة'
+        };
+    }, [upcomingSessions, teachers]);
+
+    // Get next homework
+    const nextHomework = useMemo(() => {
+        if (!pendingHomework || pendingHomework.length === 0) return null;
+        return pendingHomework[0]; // Get first pending homework
+    }, [pendingHomework]);
+
     const formatSessionTime = (date: string) => {
         const d = new Date(date);
         const today = new Date();
@@ -72,21 +72,24 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
         return { dayLabel, time };
     };
 
-    const getHomeworkStatusLabel = (status: HomeworkStatus) => {
+    const getHomeworkStatusLabel = (status: HomeworkStatus | string) => {
         switch (status) {
             case HomeworkStatus.NOT_STARTED:
+            case 'لم يبدأ':
                 return { label: 'لم يبدأ', class: 'status-pending' };
             case HomeworkStatus.SUBMITTED:
+            case 'تم الإرسال':
                 return { label: 'تم الإرسال', class: 'status-submitted' };
             case HomeworkStatus.REVIEWED:
+            case 'تم المراجعة':
                 return { label: 'تم المراجعة', class: 'status-completed' };
             default:
                 return { label: status, class: '' };
         }
     };
 
-    const sessionTime = mockNextSession ? formatSessionTime(mockNextSession.scheduledAt) : null;
-    const homeworkStatus = mockHomework ? getHomeworkStatusLabel(mockHomework.status) : null;
+    const sessionTime = nextSession ? formatSessionTime(nextSession.scheduled_at) : null;
+    const homeworkStatus = nextHomework ? getHomeworkStatusLabel(nextHomework.status) : null;
 
     // Calculate days until due
     const getDaysUntilDue = (dueDate: string) => {
@@ -99,6 +102,17 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
         return `بعد ${diff} أيام`;
     };
 
+    if (isLoading) {
+        return (
+            <div className="student-dashboard animate-fadeIn">
+                <div className="loading-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', flexDirection: 'column', gap: '1rem' }}>
+                    <Loader2 size={48} className="animate-spin" style={{ color: 'var(--primary)' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>جاري تحميل البيانات...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="student-dashboard animate-fadeIn">
             {/* Welcome Header */}
@@ -110,11 +124,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                             alt={user.name}
                             className="avatar avatar-lg"
                         />
-                        {/* Streak Badge */}
-                        <div className="streak-badge">
-                            <Flame size={14} />
-                            <span>12</span>
-                        </div>
+                        {/* Streak Badge removed */}
                     </div>
                     <div className="welcome-text">
                         <h1 className="welcome-title">مرحباً، {user.name.split(' ')[0]}</h1>
@@ -124,11 +134,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                     </div>
                 </div>
                 <div className="header-stats">
-                    <div className="stat-item">
-                        <Star size={18} className="stat-icon" />
-                        <span className="stat-value">450</span>
-                        <span className="stat-label">نقطة</span>
-                    </div>
+                    {/* Stats removed as per request */}
                 </div>
             </header>
 
@@ -143,18 +149,21 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                         <h3 className="card-title">الجلسة القادمة</h3>
                     </div>
 
-                    {mockNextSession ? (
+                    {nextSession ? (
                         <div className="card-content">
                             <div className="session-time">
                                 <span className="time-day">{sessionTime?.dayLabel}</span>
                                 <span className="time-hour">{sessionTime?.time}</span>
                             </div>
                             <div className="session-details">
-                                <span className="badge badge-hifz">{mockNextSession.type}</span>
+                                <span className="badge badge-hifz">{nextSession.type}</span>
                                 <span className="session-duration">
                                     <Clock size={14} />
-                                    {mockNextSession.duration} دقيقة
+                                    {nextSession.duration} دقيقة
                                 </span>
+                            </div>
+                            <div className="teacher-info" style={{ marginTop: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                                مع {nextSession.teacherName}
                             </div>
                             <button
                                 className="btn btn-primary w-full session-join-btn"
@@ -203,13 +212,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                             </div>
                         </div>
 
-                        <button
-                            className="btn btn-secondary w-full"
-                            onClick={() => onNavigate('learning')}
-                        >
-                            <Mic size={18} />
-                            <span>أرسل تسميع صوتي</span>
-                        </button>
+                        {/* Audio button removed */}
                     </div>
                 </div>
 
@@ -222,17 +225,17 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                         <h3 className="card-title">آخر واجب</h3>
                     </div>
 
-                    {mockHomework ? (
+                    {nextHomework ? (
                         <div className="card-content">
                             <div className="homework-info">
-                                <h4 className="homework-title">{mockHomework.title}</h4>
+                                <h4 className="homework-title">{nextHomework.title}</h4>
                                 <div className="homework-meta">
                                     <span className={`badge ${homeworkStatus?.class}`}>
                                         {homeworkStatus?.label}
                                     </span>
                                     <span className="homework-due">
                                         <Clock size={14} />
-                                        {getDaysUntilDue(mockHomework.dueDate)}
+                                        {getDaysUntilDue(nextHomework.due_date)}
                                     </span>
                                 </div>
                             </div>
@@ -241,7 +244,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                                 className="btn btn-primary w-full"
                                 onClick={() => onNavigate('homework')}
                             >
-                                {mockHomework.status === HomeworkStatus.NOT_STARTED ? 'ابدأ الآن' : 'عرض التفاصيل'}
+                                {nextHomework.status === 'لم يبدأ' ? 'ابدأ الآن' : 'عرض التفاصيل'}
                             </button>
                         </div>
                     ) : (
@@ -286,15 +289,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                         <span>احجز جلسة</span>
                     </button>
 
-                    <button
-                        className="quick-action-btn"
-                        onClick={() => onNavigate('learning')}
-                    >
-                        <div className="quick-action-icon">
-                            <Mic size={24} />
-                        </div>
-                        <span>ارفع تسميع</span>
-                    </button>
+                    {/* Audio action removed */}
 
                     <button
                         className="quick-action-btn"

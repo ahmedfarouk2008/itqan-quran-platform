@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Users,
     Search,
@@ -6,8 +6,6 @@ import {
     MoreVertical,
     BookOpen,
     Calendar,
-    MessageSquare,
-    Star,
     ChevronLeft,
     TrendingUp,
     TrendingDown,
@@ -15,6 +13,7 @@ import {
     Award,
     Eye,
 } from 'lucide-react';
+import { useStudents } from '../../hooks';
 import '../../styles/pages/teacher-students.css';
 
 // ==============================================
@@ -39,106 +38,42 @@ interface Student {
     status: 'active' | 'inactive' | 'new';
     trend: 'up' | 'down' | 'stable';
     joinedAt: string;
+    currentSurah: string;
+    teacherNotes: Array<{ type: 'warning' | 'success'; text: string; date: string }>;
 }
 
-// Demo data
-const students: Student[] = [
-    {
-        id: '1',
-        name: 'أحمد محمد',
-        avatar: null,
-        level: 'متوسط',
-        progress: 75,
-        lastSession: 'أمس',
-        nextSession: 'اليوم 10:00 ص',
-        totalSessions: 45,
-        memorizedSurahs: 12,
-        rating: 4.5,
-        status: 'active',
-        trend: 'up',
-        joinedAt: 'منذ 3 أشهر',
-    },
-    {
-        id: '2',
-        name: 'فاطمة علي',
-        avatar: null,
-        level: 'مبتدئ',
-        progress: 35,
-        lastSession: 'منذ 3 أيام',
-        nextSession: 'غداً 11:00 ص',
-        totalSessions: 12,
-        memorizedSurahs: 5,
-        rating: 4.8,
-        status: 'active',
-        trend: 'up',
-        joinedAt: 'منذ شهر',
-    },
-    {
-        id: '3',
-        name: 'محمد أحمد',
-        avatar: null,
-        level: 'متقدم',
-        progress: 90,
-        lastSession: 'اليوم',
-        nextSession: null,
-        totalSessions: 120,
-        memorizedSurahs: 25,
-        rating: 4.9,
-        status: 'active',
-        trend: 'stable',
-        joinedAt: 'منذ سنة',
-    },
-    {
-        id: '4',
-        name: 'سارة أحمد',
-        avatar: null,
-        level: 'مبتدئ',
-        progress: 20,
-        lastSession: 'منذ أسبوع',
-        nextSession: null,
-        totalSessions: 8,
-        memorizedSurahs: 3,
-        rating: 4.2,
-        status: 'inactive',
-        trend: 'down',
-        joinedAt: 'منذ شهرين',
-    },
-    {
-        id: '5',
-        name: 'يوسف محمد',
-        avatar: null,
-        level: 'متوسط',
-        progress: 55,
-        lastSession: 'أمس',
-        nextSession: 'بعد غد 9:00 ص',
-        totalSessions: 32,
-        memorizedSurahs: 10,
-        rating: 4.6,
-        status: 'active',
-        trend: 'up',
-        joinedAt: 'منذ 4 أشهر',
-    },
-    {
-        id: '6',
-        name: 'نور الدين',
-        avatar: null,
-        level: 'مبتدئ',
-        progress: 15,
-        lastSession: 'لم يبدأ',
-        nextSession: 'اليوم 2:00 م',
-        totalSessions: 0,
-        memorizedSurahs: 0,
-        rating: 0,
-        status: 'new',
-        trend: 'stable',
-        joinedAt: 'اليوم',
-    },
-];
+// ... (imports remain the same)
 
 const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate }) => {
+    const { students: firebaseStudents, isLoading, updateStudent } = useStudents();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive' | 'new'>('all');
-    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+    const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+
+    // Map Firebase profiles to local Student interface
+    const students: Student[] = useMemo(() => {
+        return firebaseStudents.map(p => ({
+            id: p.id,
+            name: p.name,
+            avatar: p.avatar_url,
+            level: p.level || 'مبتدئ',
+            progress: Math.round(((p.memorized_ayahs || 0) / (p.total_surahs ? p.total_surahs * 20 : 6000)) * 100) || 0, // Approx calculation
+            lastSession: 'غير محدد',
+            nextSession: null,
+            totalSessions: 0,
+            memorizedSurahs: p.memorized_ayahs ? Math.floor(p.memorized_ayahs / 20) : 0, // Approx
+            rating: p.rating || 0,
+            status: p.status || 'active',
+            trend: 'stable' as const,
+            joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
+            currentSurah: p.current_surah || 'لم يبدأ',
+            teacherNotes: p.teacher_notes || []
+        }));
+    }, [firebaseStudents]);
+
+    const selectedStudent = useMemo(() =>
+        students.find(s => s.id === selectedStudentId) || null,
+        [students, selectedStudentId]);
 
     const filteredStudents = students.filter((student) => {
         const matchesSearch = student.name.includes(searchQuery);
@@ -152,6 +87,8 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
         inactive: students.filter((s) => s.status === 'inactive').length,
         new: students.filter((s) => s.status === 'new').length,
     };
+
+    // ... (helper functions getStatusBadge, getTrendIcon remain the same)
 
     const getStatusBadge = (status: Student['status']) => {
         switch (status) {
@@ -172,6 +109,48 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                 return <TrendingDown size={16} className="trend-icon down" />;
             default:
                 return null;
+        }
+    };
+
+    // Local state for editing form
+    const [editForm, setEditForm] = useState<{
+        currentSurah: string;
+        memorizedAyahs: number;
+        status: 'active' | 'inactive' | 'new';
+        newNote: string;
+    } | null>(null);
+
+    // Initialize edit form when student is selected
+    React.useEffect(() => {
+        if (selectedStudent) {
+            setEditForm({
+                currentSurah: selectedStudent.currentSurah,
+                memorizedAyahs: selectedStudent.memorizedSurahs * 20, // Approx
+                status: selectedStudent.status,
+                newNote: ''
+            });
+        }
+    }, [selectedStudent]);
+
+    const handleSave = async () => {
+        if (!selectedStudent || !editForm) return;
+
+        const updates: any = {};
+        if (editForm.currentSurah !== selectedStudent.currentSurah) updates.current_surah = editForm.currentSurah;
+        if (editForm.memorizedAyahs !== selectedStudent.memorizedSurahs * 20) updates.memorized_ayahs = editForm.memorizedAyahs;
+        if (editForm.status !== selectedStudent.status) updates.status = editForm.status;
+
+        if (Object.keys(updates).length > 0) {
+            await updateStudent(selectedStudent.id, updates);
+        }
+
+        // Notes handled separately for now, or could be batched
+        // If note exists, add it
+        if (editForm.newNote.trim()) {
+            const newNoteObj = { type: 'warning' as const, text: editForm.newNote, date: new Date().toISOString() };
+            const updatedNotes = [...selectedStudent.teacherNotes, newNoteObj];
+            await updateStudent(selectedStudent.id, { teacher_notes: updatedNotes });
+            setEditForm(prev => prev ? ({ ...prev, newNote: '' }) : null);
         }
     };
 
@@ -227,8 +206,19 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
 
             {/* Students Grid */}
             <div className="students-grid">
-                {filteredStudents.map((student) => (
-                    <div key={student.id} className="student-card">
+                {filteredStudents.length === 0 && !isLoading ? (
+                    <div className="empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
+                        <Users size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+                        <h3>لا يوجد طالبات</h3>
+                        <p>لم يتم العثور على طالبات تطابق بحثك حالياً</p>
+                    </div>
+                ) : filteredStudents.map((student) => (
+                    <div
+                        key={student.id}
+                        className="student-card"
+                        onClick={() => setSelectedStudentId(student.id)}
+                        style={{ cursor: 'pointer' }}
+                    >
                         <div className="card-header">
                             <div className="student-avatar">
                                 {student.avatar ? (
@@ -242,7 +232,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                 <span className="level-badge">{student.level}</span>
                             </div>
                             {getStatusBadge(student.status)}
-                            <button className="more-btn">
+                            <button className="more-btn" onClick={(e) => e.stopPropagation()}>
                                 <MoreVertical size={18} />
                             </button>
                         </div>
@@ -269,12 +259,6 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                 <BookOpen size={16} />
                                 <span>{student.memorizedSurahs} سورة</span>
                             </div>
-                            {student.rating > 0 && (
-                                <div className="stat">
-                                    <Star size={16} fill="#f59e0b" stroke="#f59e0b" />
-                                    <span>{student.rating}</span>
-                                </div>
-                            )}
                         </div>
 
                         <div className="session-info">
@@ -290,12 +274,9 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                         </div>
 
                         <div className="card-actions">
-                            <button className="action-btn primary" onClick={() => setSelectedStudent(student)}>
+                            <button className="action-btn primary">
                                 <Eye size={16} />
                                 عرض التفاصيل
-                            </button>
-                            <button className="action-btn" onClick={() => onNavigate('messages')}>
-                                <MessageSquare size={16} />
                             </button>
                         </div>
                     </div>
@@ -303,19 +284,17 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
             </div>
 
             {/* Student Detail Modal */}
-            {selectedStudent && (
-                <div className="modal-overlay" onClick={() => setSelectedStudent(null)}>
+            {selectedStudent && editForm && (
+                <div className="modal-overlay" onClick={() => setSelectedStudentId(null)}>
                     <div className="student-detail-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <div className="student-avatar large">
-                                {selectedStudent.name.charAt(0)}
-                            </div>
+                            {/* Header content */}
                             <div className="student-info">
                                 <h2>{selectedStudent.name}</h2>
                                 <span className="level-badge">{selectedStudent.level}</span>
-                                {getStatusBadge(selectedStudent.status)}
+                                {getStatusBadge(editForm.status)}
                             </div>
-                            <button className="close-btn" onClick={() => setSelectedStudent(null)}>
+                            <button className="close-btn" onClick={() => setSelectedStudentId(null)}>
                                 <ChevronLeft size={24} />
                             </button>
                         </div>
@@ -345,35 +324,99 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                             <span className="label">التقدم العام</span>
                                         </div>
                                     </div>
-                                    <div className="detail-stat">
-                                        <Star size={20} fill="#f59e0b" stroke="#f59e0b" />
-                                        <div>
-                                            <span className="value">{selectedStudent.rating || '-'}</span>
-                                            <span className="label">التقييم</span>
-                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>معلومات الانضمام</h3>
+                        <p>انضم {selectedStudent.joinedAt}</p>
+
+                        <div className="detail-section">
+                            <h3>تعديل البيانات</h3>
+                            <div className="edit-form grid grid-cols-2 gap-4">
+                                <div className="form-group">
+                                    <label>السورة الحالية</label>
+                                    <input
+                                        type="text"
+                                        className="form-input w-full p-2 border rounded"
+                                        value={editForm.currentSurah}
+                                        onChange={(e) => setEditForm({ ...editForm, currentSurah: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>عدد الآيات المحفوظة</label>
+                                    <input
+                                        type="number"
+                                        className="form-input w-full p-2 border rounded"
+                                        value={editForm.memorizedAyahs}
+                                        onChange={(e) => setEditForm({ ...editForm, memorizedAyahs: parseInt(e.target.value) || 0 })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>الحالة</label>
+                                    <select
+                                        className="form-input w-full p-2 border rounded"
+                                        value={editForm.status}
+                                        onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}
+                                    >
+                                        <option value="active">نشط</option>
+                                        <option value="inactive">غير نشط</option>
+                                        <option value="new">جديد</option>
+                                    </select>
+                                </div>
+                                <div className="form-group col-span-2">
+                                    <label>ملاحظات المعلمة (ستظهر للطالبة)</label>
+                                    <div className="flex gap-2">
+                                        <textarea
+                                            className="form-input w-full p-2 border rounded"
+                                            rows={2}
+                                            placeholder="أضف ملاحظة جديدة..."
+                                            value={editForm.newNote}
+                                            onChange={(e) => setEditForm({ ...editForm, newNote: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="notes-list mt-2">
+                                        {selectedStudent.teacherNotes.map((note, idx) => (
+                                            <div key={idx} className="text-sm bg-gray-50 p-2 rounded mb-1 flex justify-between">
+                                                <span>{note.text}</span>
+                                                <button
+                                                    className="text-red-500 text-xs"
+                                                    onClick={() => {
+                                                        const updated = selectedStudent.teacherNotes.filter((_, i) => i !== idx);
+                                                        updateStudent(selectedStudent.id, { teacher_notes: updated });
+                                                    }}
+                                                >
+                                                    حذف
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="detail-section">
-                                <h3>معلومات الانضمام</h3>
-                                <p>انضم {selectedStudent.joinedAt}</p>
-                            </div>
-
-                            <div className="modal-actions">
-                                <button className="action-btn primary">
-                                    <Calendar size={18} />
-                                    جدولة جلسة
-                                </button>
-                                <button className="action-btn">
-                                    <BookOpen size={18} />
-                                    إضافة واجب
-                                </button>
-                                <button className="action-btn" onClick={() => onNavigate('messages')}>
-                                    <MessageSquare size={18} />
-                                    إرسال رسالة
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
+                                    onClick={handleSave}
+                                >
+                                    حفظ التغييرات
                                 </button>
                             </div>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="action-btn primary" onClick={() => onNavigate('teacher-sessions')}>
+                                <Calendar size={18} />
+                                جدولة جلسة
+                            </button>
+                            <button className="action-btn" onClick={() => onNavigate('teacher-homework')}>
+                                <BookOpen size={18} />
+                                إضافة واجب
+                            </button>
+                            <button className="action-btn" onClick={() => onNavigate('teacher-homework')}>
+                                <BookOpen size={18} />
+                                متابعة الحفظ
+                            </button>
                         </div>
                     </div>
                 </div>

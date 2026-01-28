@@ -1,448 +1,372 @@
 import React, { useState } from 'react';
 import {
-    BookOpen,
     Search,
-    Clock,
-    Play,
-    Pause,
-    CheckCircle,
-    XCircle,
-    Star,
-    MessageSquare,
     ChevronLeft,
-    Volume2,
-    Send,
-    RotateCcw,
+    Plus,
+    User,
+    BookOpen,
+    Save,
+    X
 } from 'lucide-react';
+import FollowUpTable, { FollowUpRecord } from '../../components/Homework/FollowUpTable';
 import '../../styles/pages/teacher-homework.css';
 
 // ==============================================
-// Teacher Homework Page - مراجعة الواجبات
+// Teacher Homework Page - متابعة الحفظ والمراجعة
 // ==============================================
 
 interface TeacherHomeworkPageProps {
     onNavigate: (page: string) => void;
 }
 
-interface Homework {
+interface Student {
     id: string;
-    studentName: string;
-    studentAvatar: string | null;
-    type: 'حفظ' | 'مراجعة' | 'تسميع صوتي' | 'تجويد';
-    surah: string;
-    ayahRange?: string;
-    submittedAt: string;
-    dueDate: string;
-    status: 'pending' | 'reviewed' | 'returned';
-    audioUrl?: string;
-    feedback?: {
-        rating: number;
-        notes: string;
-        mistakes: string[];
-    };
+    name: string;
+    level: string;
+    lastUpdate: string;
 }
 
-// Demo data
-const homeworkList: Homework[] = [
+// Mock Students Data
+const students: Student[] = [
+    { id: '1', name: 'أحمد محمد', level: 'المستوى الثالث', lastUpdate: 'اليوم' },
+    { id: '2', name: 'فاطمة علي', level: 'المستوى الرابع', lastUpdate: 'أمس' },
+    { id: '3', name: 'نور الدين', level: 'المستوى الثاني', lastUpdate: 'منذ يومين' },
+    { id: '4', name: 'سارة أحمد', level: 'المستوى الثالث', lastUpdate: 'منذ 3 أيام' },
+    { id: '5', name: 'يوسف محمد', level: 'المستوى الأول', lastUpdate: 'منذ 5 أيام' },
+];
+
+// Mock Records Initial Data
+const initialRecords: FollowUpRecord[] = [
     {
         id: '1',
-        studentName: 'أحمد محمد',
-        studentAvatar: null,
-        type: 'تسميع صوتي',
-        surah: 'سورة يس',
-        ayahRange: 'آية 1-20',
-        submittedAt: 'منذ 30 دقيقة',
-        dueDate: 'اليوم',
-        status: 'pending',
-        audioUrl: '#',
+        date: '2024-01-27',
+        day: 'السبت',
+        hifz: { surah: 'الملك', from: '1', to: '15', grade: 'ممتاز' },
+        revision: { surah: 'البقرة', from: '1', to: '10', grade: 'جيد جداً' },
+        notes: 'انتبه للغنة'
     },
     {
         id: '2',
-        studentName: 'فاطمة علي',
-        studentAvatar: null,
-        type: 'حفظ',
-        surah: 'سورة الرحمن',
-        ayahRange: 'آية 1-30',
-        submittedAt: 'منذ ساعة',
-        dueDate: 'اليوم',
-        status: 'pending',
-        audioUrl: '#',
-    },
-    {
-        id: '3',
-        studentName: 'محمد أحمد',
-        studentAvatar: null,
-        type: 'تسميع صوتي',
-        surah: 'سورة الواقعة',
-        ayahRange: 'كاملة',
-        submittedAt: 'منذ 3 ساعات',
-        dueDate: 'أمس',
-        status: 'pending',
-        audioUrl: '#',
-    },
-    {
-        id: '4',
-        studentName: 'سارة أحمد',
-        studentAvatar: null,
-        type: 'مراجعة',
-        surah: 'سورة الكهف',
-        ayahRange: 'آية 1-50',
-        submittedAt: 'منذ يوم',
-        dueDate: 'أمس',
-        status: 'reviewed',
-        feedback: {
-            rating: 4,
-            notes: 'أداء جيد جداً، يحتاج تحسين في مخارج الحروف',
-            mistakes: ['آية 15 - تكرار خاطئ', 'آية 23 - وقف غير صحيح'],
-        },
-    },
-    {
-        id: '5',
-        studentName: 'يوسف محمد',
-        studentAvatar: null,
-        type: 'تجويد',
-        surah: 'أحكام المد',
-        submittedAt: 'منذ يومين',
-        dueDate: 'منذ 3 أيام',
-        status: 'returned',
-    },
+        date: '2024-01-24',
+        day: 'الأربعاء',
+        hifz: { surah: 'القلم', from: '1', to: '20', grade: 'جيد' },
+        revision: { surah: 'البقرة', from: '11', to: '20', grade: 'ممتاز' },
+        notes: ''
+    }
 ];
 
-const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate }) => {
-    const [activeTab, setActiveTab] = useState<'pending' | 'reviewed' | 'returned'>('pending');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedHomework, setSelectedHomework] = useState<Homework | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [reviewData, setReviewData] = useState({
-        rating: 0,
-        notes: '',
-        mistakes: '',
-    });
+const emptyRecordData = {
+    date: new Date().toISOString().split('T')[0],
+    hifzSurah: '',
+    hifzFrom: '',
+    hifzTo: '',
+    hifzGrade: 'جيد جداً',
+    revSurah: '',
+    revFrom: '',
+    revTo: '',
+    revGrade: 'جيد جداً',
+    notes: ''
+};
 
-    const filteredHomework = homeworkList.filter(
-        (hw) => hw.status === activeTab && hw.studentName.includes(searchQuery)
+const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate }) => {
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [records, setRecords] = useState<FollowUpRecord[]>(initialRecords);
+
+    // Modal State
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+    const [formData, setFormData] = useState(emptyRecordData);
+
+    const filteredStudents = students.filter(student =>
+        student.name.includes(searchQuery)
     );
 
-    const stats = {
-        pending: homeworkList.filter((hw) => hw.status === 'pending').length,
-        reviewed: homeworkList.filter((hw) => hw.status === 'reviewed').length,
-        returned: homeworkList.filter((hw) => hw.status === 'returned').length,
+    const handleStudentClick = (student: Student) => {
+        setSelectedStudent(student);
+        // In real app, fetch records for this student here
     };
 
-    const getTypeBadge = (type: Homework['type']) => {
-        const colors: Record<Homework['type'], string> = {
-            'حفظ': 'hifz',
-            'مراجعة': 'review',
-            'تسميع صوتي': 'audio',
-            'تجويد': 'tajweed',
+    const handleBack = () => {
+        setSelectedStudent(null);
+    };
+
+    // --- Actions ---
+
+    const handleAddClick = () => {
+        setFormData(emptyRecordData);
+        setEditingRecordId(null);
+        setShowAddModal(true);
+    };
+
+    const handleEditRecord = (record: FollowUpRecord) => {
+        setFormData({
+            date: record.date,
+            hifzSurah: record.hifz.surah,
+            hifzFrom: record.hifz.from,
+            hifzTo: record.hifz.to,
+            hifzGrade: record.hifz.grade,
+            revSurah: record.revision.surah,
+            revFrom: record.revision.from,
+            revTo: record.revision.to,
+            revGrade: record.revision.grade,
+            notes: record.notes || ''
+        });
+        setEditingRecordId(record.id);
+        setShowAddModal(true);
+    };
+
+    const handleDeleteRecord = (id: string) => {
+        if (window.confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+            setRecords(prev => prev.filter(r => r.id !== id));
+        }
+    };
+
+    const handleSaveRecord = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const dateObj = new Date(formData.date);
+        const dayName = dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
+
+        const newRecord: FollowUpRecord = {
+            id: editingRecordId || Date.now().toString(),
+            date: formData.date,
+            day: dayName,
+            hifz: {
+                surah: formData.hifzSurah,
+                from: formData.hifzFrom,
+                to: formData.hifzTo,
+                grade: formData.hifzGrade
+            },
+            revision: {
+                surah: formData.revSurah,
+                from: formData.revFrom,
+                to: formData.revTo,
+                grade: formData.revGrade
+            },
+            notes: formData.notes
         };
-        return <span className={`type-badge ${colors[type]}`}>{type}</span>;
-    };
 
-    const handleSubmitReview = () => {
-        // Submit review logic
-        console.log('Submitting review:', reviewData);
-        setSelectedHomework(null);
-        setReviewData({ rating: 0, notes: '', mistakes: '' });
+        if (editingRecordId) {
+            setRecords(prev => prev.map(r => r.id === editingRecordId ? newRecord : r));
+        } else {
+            setRecords(prev => [newRecord, ...prev]);
+        }
+
+        setShowAddModal(false);
     };
 
     return (
-        <div className="teacher-homework-page">
-            {/* Header */}
-            <div className="page-header">
-                <div className="header-content">
-                    <h1>
-                        <BookOpen size={28} />
-                        مراجعة الواجبات
-                    </h1>
-                    <p>{stats.pending} واجب ينتظر المراجعة</p>
-                </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="tabs-container">
-                <button
-                    className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('pending')}
-                >
-                    <Clock size={18} />
-                    قيد الانتظار
-                    <span className="count">{stats.pending}</span>
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'reviewed' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('reviewed')}
-                >
-                    <CheckCircle size={18} />
-                    تمت المراجعة
-                    <span className="count">{stats.reviewed}</span>
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'returned' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('returned')}
-                >
-                    <RotateCcw size={18} />
-                    مُعاد
-                    <span className="count">{stats.returned}</span>
-                </button>
-            </div>
-
-            {/* Search */}
-            <div className="search-bar">
-                <Search size={20} />
-                <input
-                    type="text"
-                    placeholder="ابحث عن طالبة..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-
-            {/* Homework List */}
-            <div className="homework-list">
-                {filteredHomework.length === 0 ? (
-                    <div className="empty-state">
-                        <BookOpen size={48} />
-                        <p>لا توجد واجبات في هذا القسم</p>
-                    </div>
-                ) : (
-                    filteredHomework.map((homework) => (
-                        <div key={homework.id} className="homework-card">
-                            <div className="card-header">
-                                <div className="student-info">
-                                    <div className="student-avatar">
-                                        {homework.studentName.charAt(0)}
-                                    </div>
-                                    <div className="student-details">
-                                        <span className="student-name">{homework.studentName}</span>
-                                        <span className="submitted-time">{homework.submittedAt}</span>
-                                    </div>
-                                </div>
-                                {getTypeBadge(homework.type)}
-                            </div>
-
-                            <div className="homework-content">
-                                <div className="surah-info">
-                                    <BookOpen size={18} />
-                                    <span>{homework.surah}</span>
-                                    {homework.ayahRange && (
-                                        <span className="ayah-range">({homework.ayahRange})</span>
-                                    )}
-                                </div>
-
-                                {homework.audioUrl && (
-                                    <div className="audio-player">
-                                        <button
-                                            className="play-btn"
-                                            onClick={() => setIsPlaying(!isPlaying)}
-                                        >
-                                            {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                                        </button>
-                                        <div className="audio-progress">
-                                            <div className="progress-bar">
-                                                <div className="progress-fill" style={{ width: '30%' }} />
-                                            </div>
-                                            <span className="time">1:23 / 4:30</span>
-                                        </div>
-                                        <Volume2 size={18} />
-                                    </div>
-                                )}
-
-                                {homework.feedback && (
-                                    <div className="feedback-preview">
-                                        <div className="rating">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <Star
-                                                    key={star}
-                                                    size={16}
-                                                    fill={star <= homework.feedback!.rating ? '#f59e0b' : 'none'}
-                                                    stroke={star <= homework.feedback!.rating ? '#f59e0b' : '#d1d5db'}
-                                                />
-                                            ))}
-                                        </div>
-                                        <p className="notes">{homework.feedback.notes}</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="card-actions">
-                                {homework.status === 'pending' ? (
-                                    <>
-                                        <button
-                                            className="action-btn primary"
-                                            onClick={() => setSelectedHomework(homework)}
-                                        >
-                                            <CheckCircle size={16} />
-                                            مراجعة
-                                        </button>
-                                        <button className="action-btn" onClick={() => onNavigate('messages')}>
-                                            <MessageSquare size={16} />
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button
-                                        className="action-btn"
-                                        onClick={() => setSelectedHomework(homework)}
-                                    >
-                                        عرض التفاصيل
-                                        <ChevronLeft size={16} />
-                                    </button>
-                                )}
-                            </div>
+        <div className="teacher-homework-page animate-fadeIn">
+            {!selectedStudent ? (
+                /* Students Grid View */
+                <>
+                    <header className="page-header">
+                        <div className="header-content">
+                            <h1>
+                                <BookOpen size={28} />
+                                سجلات المتابعة
+                            </h1>
+                            <p>اختر طالباً لعرض وتحديث سجل الحفظ والمراجعة</p>
                         </div>
-                    ))
-                )}
-            </div>
+                    </header>
 
-            {/* Review Modal */}
-            {selectedHomework && (
-                <div className="modal-overlay" onClick={() => setSelectedHomework(null)}>
-                    <div className="review-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="controls-bar">
+                        <div className="search-wrapper">
+                            <Search size={20} />
+                            <input
+                                type="text"
+                                placeholder="ابحث عن طالب..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="students-grid">
+                        {filteredStudents.map(student => (
+                            <div
+                                key={student.id}
+                                className="student-card"
+                                onClick={() => handleStudentClick(student)}
+                            >
+                                <div className="student-avatar">
+                                    <User size={24} />
+                                </div>
+                                <div className="student-info">
+                                    <h3>{student.name}</h3>
+                                    <span className="student-level">{student.level}</span>
+                                    <span className="last-update">آخر تحديث: {student.lastUpdate}</span>
+                                </div>
+                                <ChevronLeft size={20} className="arrow-icon" />
+                            </div>
+                        ))}
+                    </div>
+                </>
+            ) : (
+                /* Student Follow-up Details */
+                <div className="student-details-view">
+                    <header className="details-header">
+                        <button className="back-btn" onClick={handleBack}>
+                            <ChevronLeft size={20} />
+                            رجوع
+                        </button>
+                        <div className="student-header-info">
+                            <h2>{selectedStudent.name}</h2>
+                            <span className="level-badge">{selectedStudent.level}</span>
+                        </div>
+                        <button
+                            className="add-record-btn"
+                            onClick={handleAddClick}
+                        >
+                            <Plus size={18} />
+                            إضافة سجل يومي
+                        </button>
+                    </header>
+
+                    <FollowUpTable
+                        records={records}
+                        isTeacher={true}
+                        onEdit={handleEditRecord}
+                        onDelete={handleDeleteRecord}
+                    />
+                </div>
+            )}
+
+            {/* Add/Edit Record Modal */}
+            {showAddModal && (
+                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+                    <div className="add-session-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px' }}>
                         <div className="modal-header">
-                            <h2>مراجعة الواجب</h2>
-                            <button className="close-btn" onClick={() => setSelectedHomework(null)}>
-                                <XCircle size={24} />
+                            <h2>{editingRecordId ? 'تعديل السجل' : 'إضافة سجل يومي'}</h2>
+                            <button className="close-btn" onClick={() => setShowAddModal(false)}>
+                                <X size={24} />
                             </button>
                         </div>
 
-                        <div className="modal-content">
-                            {/* Student & Homework Info */}
-                            <div className="homework-info-section">
-                                <div className="student-info">
-                                    <div className="student-avatar large">
-                                        {selectedHomework.studentName.charAt(0)}
+                        <form onSubmit={handleSaveRecord} className="session-form">
+                            {/* Date */}
+                            <div className="form-group">
+                                <label>التاريخ</label>
+                                <input
+                                    type="date"
+                                    required
+                                    value={formData.date}
+                                    onChange={e => setFormData({ ...formData, date: e.target.value })}
+                                />
+                            </div>
+
+                            {/* Two Columns: Hifz & Revision */}
+                            <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                                {/* Hifz Column */}
+                                <div className="column-group">
+                                    <h3 style={{ marginBottom: '1rem', color: 'var(--color-primary-600)' }}>الحفظ الجديد</h3>
+                                    <div className="form-group">
+                                        <label>السورة</label>
+                                        <input
+                                            type="text"
+                                            placeholder="اسم السورة"
+                                            value={formData.hifzSurah}
+                                            onChange={e => setFormData({ ...formData, hifzSurah: e.target.value })}
+                                            style={{ color: 'var(--color-neutral-800)' }}
+                                        />
                                     </div>
-                                    <div>
-                                        <h3>{selectedHomework.studentName}</h3>
-                                        {getTypeBadge(selectedHomework.type)}
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>من آية</label>
+                                            <input
+                                                type="text"
+                                                value={formData.hifzFrom}
+                                                onChange={e => setFormData({ ...formData, hifzFrom: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>إلى آية</label>
+                                            <input
+                                                type="text"
+                                                value={formData.hifzTo}
+                                                onChange={e => setFormData({ ...formData, hifzTo: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>التقدير</label>
+                                        <select
+                                            value={formData.hifzGrade}
+                                            onChange={e => setFormData({ ...formData, hifzGrade: e.target.value })}
+                                        >
+                                            <option value="ممتاز">ممتاز</option>
+                                            <option value="جيد جداً">جيد جداً</option>
+                                            <option value="جيد">جيد</option>
+                                            <option value="مقبول">مقبول</option>
+                                            <option value="إعادة">إعادة</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div className="surah-details">
-                                    <BookOpen size={20} />
-                                    <span>{selectedHomework.surah}</span>
-                                    {selectedHomework.ayahRange && (
-                                        <span>({selectedHomework.ayahRange})</span>
-                                    )}
+
+                                {/* Revision Column */}
+                                <div className="column-group">
+                                    <h3 style={{ marginBottom: '1rem', color: 'var(--color-secondary-600)' }}>المراجعة</h3>
+                                    <div className="form-group">
+                                        <label>السورة</label>
+                                        <input
+                                            type="text"
+                                            placeholder="اسم السورة"
+                                            value={formData.revSurah}
+                                            onChange={e => setFormData({ ...formData, revSurah: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>من آية</label>
+                                            <input
+                                                type="text"
+                                                value={formData.revFrom}
+                                                onChange={e => setFormData({ ...formData, revFrom: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>إلى آية</label>
+                                            <input
+                                                type="text"
+                                                value={formData.revTo}
+                                                onChange={e => setFormData({ ...formData, revTo: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>التقدير</label>
+                                        <select
+                                            value={formData.revGrade}
+                                            onChange={e => setFormData({ ...formData, revGrade: e.target.value })}
+                                        >
+                                            <option value="ممتاز">ممتاز</option>
+                                            <option value="جيد جداً">جيد جداً</option>
+                                            <option value="جيد">جيد</option>
+                                            <option value="مقبول">مقبول</option>
+                                            <option value="إعادة">إعادة</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Audio Player */}
-                            {selectedHomework.audioUrl && (
-                                <div className="audio-section">
-                                    <h4>
-                                        <Volume2 size={18} />
-                                        التسميع الصوتي
-                                    </h4>
-                                    <div className="audio-player large">
-                                        <button
-                                            className="play-btn large"
-                                            onClick={() => setIsPlaying(!isPlaying)}
-                                        >
-                                            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-                                        </button>
-                                        <div className="audio-progress">
-                                            <div className="progress-bar">
-                                                <div className="progress-fill" style={{ width: '30%' }} />
-                                            </div>
-                                            <div className="time-display">
-                                                <span>1:23</span>
-                                                <span>4:30</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            {/* Notes */}
+                            <div className="form-group">
+                                <label>ملاحظات</label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="أية ملاحظات إضافية..."
+                                    value={formData.notes}
+                                    onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                    style={{ color: 'var(--color-neutral-800)' }}
+                                />
+                            </div>
 
-                            {/* Review Form */}
-                            {selectedHomework.status === 'pending' && (
-                                <div className="review-form">
-                                    <div className="form-group">
-                                        <label>التقييم</label>
-                                        <div className="rating-input">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <button
-                                                    key={star}
-                                                    type="button"
-                                                    className={`star-btn ${star <= reviewData.rating ? 'active' : ''}`}
-                                                    onClick={() => setReviewData({ ...reviewData, rating: star })}
-                                                >
-                                                    <Star
-                                                        size={28}
-                                                        fill={star <= reviewData.rating ? '#f59e0b' : 'none'}
-                                                        stroke={star <= reviewData.rating ? '#f59e0b' : '#d1d5db'}
-                                                    />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>ملاحظات عامة</label>
-                                        <textarea
-                                            placeholder="أضف ملاحظاتك على أداء الطالبة..."
-                                            value={reviewData.notes}
-                                            onChange={(e) => setReviewData({ ...reviewData, notes: e.target.value })}
-                                            rows={3}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>الأخطاء (سطر لكل خطأ)</label>
-                                        <textarea
-                                            placeholder="آية 5 - خطأ في المد&#10;آية 12 - وقف غير صحيح"
-                                            value={reviewData.mistakes}
-                                            onChange={(e) => setReviewData({ ...reviewData, mistakes: e.target.value })}
-                                            rows={3}
-                                        />
-                                    </div>
-
-                                    <div className="form-actions">
-                                        <button
-                                            className="return-btn"
-                                            onClick={() => {
-                                                // Return homework
-                                                setSelectedHomework(null);
-                                            }}
-                                        >
-                                            <RotateCcw size={18} />
-                                            إعادة للطالبة
-                                        </button>
-                                        <button className="submit-btn" onClick={handleSubmitReview}>
-                                            <Send size={18} />
-                                            إرسال التقييم
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Show Feedback for reviewed */}
-                            {selectedHomework.feedback && (
-                                <div className="feedback-display">
-                                    <h4>التقييم المُرسل</h4>
-                                    <div className="rating-display">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <Star
-                                                key={star}
-                                                size={24}
-                                                fill={star <= selectedHomework.feedback!.rating ? '#f59e0b' : 'none'}
-                                                stroke={star <= selectedHomework.feedback!.rating ? '#f59e0b' : '#d1d5db'}
-                                            />
-                                        ))}
-                                    </div>
-                                    <p className="notes">{selectedHomework.feedback.notes}</p>
-                                    {selectedHomework.feedback.mistakes.length > 0 && (
-                                        <div className="mistakes-list">
-                                            <h5>الأخطاء:</h5>
-                                            <ul>
-                                                {selectedHomework.feedback.mistakes.map((mistake, i) => (
-                                                    <li key={i}>{mistake}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                            <button type="submit" className="upload-btn primary" style={{ width: '100%', marginTop: '1rem' }}>
+                                <Save size={18} />
+                                حفظ السجل
+                            </button>
+                        </form>
                     </div>
                 </div>
             )}

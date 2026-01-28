@@ -1,0 +1,540 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Registration Success",
+    "description": "Verify that a new user can register successfully by providing valid credentials and selecting an educational goal.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the signup page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in valid username, email, password, and select an educational goal (Hifz, Tajweed or Tafseer)"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the account is created successfully and user is redirected to onboarding or dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Registration Input Validation",
+    "description": "Verify registration form handles invalid inputs such as empty fields, invalid email, weak password, and missing educational goal selection.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the signup page"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit the form with empty required fields"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors appear for empty fields"
+      },
+      {
+        "type": "action",
+        "description": "Input invalid email format and weak password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate error messages for email format and password strength"
+      },
+      {
+        "type": "action",
+        "description": "Fill form correctly but do not select an educational goal"
+      },
+      {
+        "type": "action",
+        "description": "Try submitting again"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that user is prompted to choose an educational goal"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Login Success",
+    "description": "Verify user is able to login successfully with valid credentials.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Input valid username/email and password"
+      },
+      {
+        "type": "action",
+        "description": "Click login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm user is authenticated and redirected to respective dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "User Login Failure Invalid Credentials",
+    "description": "Verify login fails and shows error with incorrect username or password.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Input invalid username/email or password"
+      },
+      {
+        "type": "action",
+        "description": "Click login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message indicating login failure is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Teacher Creates a New Teaching Session",
+    "description": "Verify that a teacher can create a new teaching session with valid details.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher and navigate to Teacher Sessions Management page"
+      },
+      {
+        "type": "action",
+        "description": "Click on 'Create New Session' button"
+      },
+      {
+        "type": "action",
+        "description": "Fill in all required session details such as date, time, student(s), and topic"
+      },
+      {
+        "type": "action",
+        "description": "Submit the session creation form"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm session is listed in the teacher's sessions overview and details are correct"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Teacher Edits and Deletes Session",
+    "description": "Verify that a teacher can edit session details and delete a session successfully.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher and navigate to Teacher Sessions page"
+      },
+      {
+        "type": "action",
+        "description": "Select an existing session to edit"
+      },
+      {
+        "type": "action",
+        "description": "Modify session details and save changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify updated session details are saved correctly"
+      },
+      {
+        "type": "action",
+        "description": "Delete the same session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that session is removed from the list"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Teacher Creates and Assigns Homework",
+    "description": "Verify that a teacher can create homework assignments and assign them to students.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher and navigate to Teacher Homework Management page"
+      },
+      {
+        "type": "action",
+        "description": "Click on 'Create Homework' button"
+      },
+      {
+        "type": "action",
+        "description": "Enter homework details and select student(s) to assign"
+      },
+      {
+        "type": "action",
+        "description": "Submit the homework assignment"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that the new homework appears in the students’ homework list"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Teacher Edits and Deletes Homework",
+    "description": "Verify teacher can update or delete existing homework assignments.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher and navigate to Teacher Homework page"
+      },
+      {
+        "type": "action",
+        "description": "Select an existing homework to edit"
+      },
+      {
+        "type": "action",
+        "description": "Modify the homework details and save changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated homework details are displayed correctly"
+      },
+      {
+        "type": "action",
+        "description": "Delete the homework"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the homework is removed from the list"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Student Views and Completes Homework",
+    "description": "Verify that students can view assigned homework and mark it as completed interactively.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student and navigate to Student Homework page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify assigned homework is listed with correct details"
+      },
+      {
+        "type": "action",
+        "description": "Open a homework item and follow interactive steps if applicable"
+      },
+      {
+        "type": "action",
+        "description": "Mark homework as completed"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm homework status updates to completed and progress is reflected"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Student Views Upcoming Sessions",
+    "description": "Verify that students can view a list of their upcoming sessions with teachers on their dashboard and sessions page.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student and navigate to Student Dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify upcoming sessions are displayed accurately with correct date, time, and teacher info"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to Student Sessions page"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the sessions list matches the dashboard and supports pagination or filtering if applicable"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Direct Messaging Between Teacher and Student",
+    "description": "Verify that teachers and students can send and receive messages instantly and reliably via direct messaging system.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a teacher and open messaging interface"
+      },
+      {
+        "type": "action",
+        "description": "Send a message to a student"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm message is sent and appears in conversation history"
+      },
+      {
+        "type": "action",
+        "description": "Login as the student and check received messages"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the message from teacher is received and displayed immediately"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Toast Notification Display",
+    "description": "Verify toast notifications appear appropriately on user actions such as success, error, or info events.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform an action like successful login, homework submission, or session creation"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm a toast notification appears with correct message and disappears after a suitable time"
+      },
+      {
+        "type": "action",
+        "description": "Trigger an error scenario e.g. invalid form submission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an error toast notification is displayed clearly informing the user"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "User Profile Update Securely",
+    "description": "Verify that both teachers and students can update their profile information securely and changes persist.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher and navigate to profile settings"
+      },
+      {
+        "type": "action",
+        "description": "Edit profile details (e.g. name, contact, educational goals) and save"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm changes are saved and reflected in the profile view"
+      },
+      {
+        "type": "action",
+        "description": "Logout and login again, verify details persist"
+      },
+      {
+        "type": "action",
+        "description": "Login as student and repeat profile editing steps"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm student profile updates are saved securely and persist after relogin"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Data Integrity in Teacher Student Management",
+    "description": "Verify that data shown in teacher’s student management page is accurate and consistent with backend data.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher and navigate to Teacher Students Management page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify list of students is complete and accurate with current progress stats"
+      },
+      {
+        "type": "action",
+        "description": "Change a student’s progress or status in backend"
+      },
+      {
+        "type": "action",
+        "description": "Refresh or reload the page"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the UI reflects the updated student data immediately"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "React Components and Hooks Integration Validation",
+    "description": "Verify that custom React hooks for sessions, students, homework, and messages fetch and update data correctly with Firebase/Supabase",
+    "category": "integration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load Teacher Sessions page and validate sessions data populated via useSessions hook"
+      },
+      {
+        "type": "assertion",
+        "description": "Sessions list matches database backend"
+      },
+      {
+        "type": "action",
+        "description": "Load Teacher Students page and validate student data fetched by useStudents hook"
+      },
+      {
+        "type": "assertion",
+        "description": "Student data is accurate and updates are reflected in UI"
+      },
+      {
+        "type": "action",
+        "description": "Load Teacher Homework page and check homework data integration with useHomework hook"
+      },
+      {
+        "type": "assertion",
+        "description": "Homework data displayed corresponds to backend state"
+      },
+      {
+        "type": "action",
+        "description": "Open messaging interface and verify messages update dynamically using useMessages hook"
+      },
+      {
+        "type": "assertion",
+        "description": "Messages flow correctly with backend in near real-time"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Secure Authentication and Authorization Flow",
+    "description": "Verify that only authenticated users can access protected routes and unauthorized access redirects to login.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to access dashboard or session management pages without login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is redirected to login page"
+      },
+      {
+        "type": "action",
+        "description": "Login with valid credentials and access teacher and student protected routes"
+      },
+      {
+        "type": "assertion",
+        "description": "User can access allowed pages and denied access to others (e.g. student accessing teacher-only pages)"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Session Booking Edge Case Handling",
+    "description": "Verify system behavior when booking sessions on boundary dates/times and with overlapping schedules.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "As a teacher, attempt to create sessions scheduled in the past"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system rejects past session creation with appropriate error"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to create overlapping sessions for same student and teacher"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm system warns about conflicts and prevents duplicate bookings"
+      },
+      {
+        "type": "action",
+        "description": "Create a session on the earliest and latest allowable time boundaries"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sessions are accepted and correctly displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Responsive UI Rendering Across Devices",
+    "description": "Verify that core pages such as Login, Teacher Dashboard, Student Dashboard render correctly on various screen sizes and resolutions.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the application on different devices and screen sizes including desktops, tablets, and mobile phones"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm all UI elements are properly visible, aligned, and functional without layout breakage"
+      },
+      {
+        "type": "action",
+        "description": "Interact with menus, buttons, forms on each screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify interactive components respond correctly and navigation is intuitive on all devices"
+      }
+    ]
+  }
+]

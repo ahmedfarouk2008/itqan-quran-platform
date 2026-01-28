@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db, Session } from '../lib/firebase';
-import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 // ==============================================
@@ -16,15 +16,18 @@ interface UseSessionsReturn {
     createSession: (data: CreateSessionData) => Promise<{ error: Error | null }>;
     updateSession: (id: string, updates: Partial<Session>) => Promise<{ error: Error | null }>;
     cancelSession: (id: string) => Promise<{ error: Error | null }>;
+    deleteSession: (id: string) => Promise<{ error: Error | null }>;
     refresh: () => Promise<void>;
 }
 
 interface CreateSessionData {
-    teacher_id: string;
+    teacher_id?: string; // Optional if creator is teacher
+    student_id?: string; // Optional if creator is student
     type: 'حفظ' | 'تجويد' | 'تفسير';
     duration: number;
     scheduled_at: string;
     notes?: string;
+    meeting_link?: string;
 }
 
 export const useSessions = (): UseSessionsReturn => {
@@ -49,8 +52,8 @@ export const useSessions = (): UseSessionsReturn => {
 
             const q = query(
                 collection(db, 'sessions'),
-                where(column, '==', user.uid), // user.id in Supabase, user.uid in Firebase
-                orderBy('scheduled_at', 'asc')
+                where(column, '==', user.uid)
+                // orderBy('scheduled_at', 'asc') // Commented to avoid needing composite index
             );
 
             const querySnapshot = await getDocs(q);
@@ -58,6 +61,9 @@ export const useSessions = (): UseSessionsReturn => {
             querySnapshot.forEach((doc) => {
                 sessionsData.push({ ...doc.data(), id: doc.id } as Session);
             });
+
+            // Client-side sort
+            sessionsData.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
 
             setSessions(sessionsData);
         } catch (err) {
@@ -108,20 +114,44 @@ export const useSessions = (): UseSessionsReturn => {
     );
 
     const createSession = async (data: CreateSessionData): Promise<{ error: Error | null }> => {
-        if (!user) {
+        if (!user || !profile) {
             return { error: new Error('User not authenticated') };
         }
 
         try {
-            const newSessionData = {
-                student_id: user.uid,
+            const isTeacher = profile.role === 'teacher';
+
+            const sessionData = {
                 ...data,
+                student_id: isTeacher ? data.student_id : user.uid,
+                teacher_id: isTeacher ? user.uid : data.teacher_id,
                 created_at: new Date().toISOString(),
-                status: 'قيد المراجعة', // Default status logic inferred
+                status: isTeacher ? 'مؤكدة' : 'قيد المراجعة', // Auto-confirm if teacher creates it
                 summary: null
             };
 
-            await addDoc(collection(db, 'sessions'), newSessionData);
+            // Validate requirements
+            if (!sessionData.student_id || !sessionData.teacher_id) {
+                return { error: new Error('Missing student or teacher ID') };
+            }
+
+            const docRef = await addDoc(collection(db, 'sessions'), sessionData);
+
+            // Create Notification
+            const notificationData = {
+                userId: isTeacher ? sessionData.student_id : sessionData.teacher_id,
+                type: 'session_request', // Using string directly to avoid enum import issues conform to NotificationType
+                title: isTeacher ? 'تم جدولة جلسة جديدة' : 'طلب حجز جلسة جديد',
+                message: isTeacher
+                    ? `قام المعلم بجدولة جلسة جديدة معك موعدها ${new Date(data.scheduled_at).toLocaleDateString('ar-EG')}`
+                    : `لديك طلب حجز جلسة جديد، يرجى مراجعته.`,
+                isRead: false,
+                createdAt: new Date().toISOString(),
+                link: isTeacher ? '/student/sessions' : '/teacher/sessions',
+                relatedId: docRef.id
+            };
+
+            await addDoc(collection(db, 'notifications'), notificationData);
 
             await fetchSessions();
             return { error: null };
@@ -146,6 +176,16 @@ export const useSessions = (): UseSessionsReturn => {
         return updateSession(id, { status: 'ملغاة' });
     };
 
+    const deleteSession = async (id: string): Promise<{ error: Error | null }> => {
+        try {
+            await deleteDoc(doc(db, 'sessions', id));
+            await fetchSessions();
+            return { error: null };
+        } catch (err) {
+            return { error: err as Error };
+        }
+    };
+
     return {
         sessions,
         upcomingSessions,
@@ -155,6 +195,7 @@ export const useSessions = (): UseSessionsReturn => {
         createSession,
         updateSession,
         cancelSession,
+        deleteSession,
         refresh: fetchSessions,
     };
 };

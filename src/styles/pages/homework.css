@@ -288,3 +288,152 @@
         padding: var(--space-3) var(--space-4);
     }
 }
+
+/* ---------- Follow Up Table ---------- */
+.follow-up-table-container {
+    padding: 0;
+    overflow: hidden;
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--color-neutral-200);
+    border-radius: var(--radius-lg);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.follow-up-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.follow-up-table th,
+.follow-up-table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: center;
+    border-bottom: 1px solid var(--color-neutral-100);
+    border-right: 1px solid var(--color-neutral-100);
+    font-size: var(--font-size-sm);
+}
+
+.follow-up-table th:last-child,
+.follow-up-table td:last-child {
+    border-right: none;
+}
+
+.follow-up-table thead tr:first-child th {
+    background-color: var(--color-primary-50);
+    color: var(--color-primary-800);
+    font-weight: var(--font-weight-bold);
+    border-bottom: 1px solid var(--color-primary-100);
+}
+
+.follow-up-table thead tr:last-child th {
+    background-color: var(--color-neutral-50);
+    color: var(--color-neutral-600);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-xs);
+}
+
+.follow-up-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Column Specifics */
+.col-day {
+    width: 120px;
+    background-color: var(--color-neutral-50);
+}
+
+.col-group {
+    background-color: var(--color-primary-50);
+}
+
+.col-notes {
+    width: 200px;
+    min-width: 150px;
+}
+
+.col-actions {
+    width: 100px;
+}
+
+/* Cell Styles */
+.cell-day {
+    background-color: var(--color-neutral-50);
+    font-weight: var(--font-weight-medium);
+}
+
+.day-name {
+    color: var(--color-neutral-800);
+    margin-bottom: 4px;
+}
+
+.date-value {
+    color: var(--color-neutral-500);
+    font-size: var(--font-size-xs);
+}
+
+.cell-notes {
+    text-align: right !important; /* Notes usually read better right-aligned in RTL */
+    color: var(--color-neutral-600);
+    line-height: 1.5;
+}
+
+/* Grade Badges */
+.grade-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.grade-excellent {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.grade-very-good {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.grade-good {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.grade-neutral {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+/* Actions */
+.actions-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.icon-btn {
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--color-neutral-500);
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: var(--color-neutral-100);
+    color: var(--color-primary-600);
+}
+
+.icon-btn.danger:hover {
+    background-color: #fef2f2;
+    color: #ef4444;
+}

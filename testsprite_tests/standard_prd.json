@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "project": "إتقان - منصة تعليم القرآن الكريم",
+    "date": "2026-01-21",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "منصة متكاملة لتعليم القرآن الكريم تربط بين الطلاب والمعلمات لتسهيل الحفظ والتجويد والتفسير من خلال نظام متطور لإدارة الجلسات، الواجبات، والتواصل المباشر.",
+  "core_goals": [
+    "توفير نظام تسجيل دخول وحسابات آمن يدعم اختيار الأهداف التعليمية مثل الحفظ، التجويد، والتفسير.",
+    "تسهيل حجز الجلسات التعليمية بين الطلاب والمعلمات.",
+    "توفير لوحة تحكم مخصصة لكل من الطلاب والمعلمات لمتابعة التقدم وإدارة المهام.",
+    "تمكين المعلمات من إنشاء وإدارة الواجبات المنزلية للطلاب.",
+    "توفير نظام رسائل مباشر للتواصل الفعال بين الطلاب والمعلمات.",
+    "تتبع تقدم الطلاب في الحفظ والتعلم بشكل دقيق.",
+    "تقديم تجربة مستخدم سلسة ومتجاوبة تعتمد على تقنيات حديثة مثل React وTypeScript مع Supabase أو Firebase للتحقق من الهوية وقاعدة البيانات."
+  ],
+  "key_features": [
+    "نظام مصادقة متكامل مع تسجيل دخول، تسجيل حساب جديد، وتدفقات تعريف المستخدمين.",
+    "لوحة تحكم المعلمات لإدارة الجلسات، الطلاب، والواجبات المنزلية.",
+    "لوحة تحكم الطلاب لعرض التقدم الدراسي، الجلسات القادمة، والواجبات.",
+    "صفحات للتعلم التفاعلي للطلاب مع إمكانية مراجعة الدروس وحفظ القرآن.",
+    "نظام إدارة الواجبات المنزلية بحيث يمكن للمعلمات تحديد وتنظيم الواجبات بسهولة.",
+    "نظام رسائل مباشر لتسهيل التواصل بين المعلمات والطلاب.",
+    "الإشعارات الفورية باستخدام نظام Toast لعرض الرسائل وردود الأفعال.",
+    "استخدام Hooks مخصصة لجلب وإدارة بيانات الجلسات، الطلاب، المعلمات، والرسائل.",
+    "تكامل مع Firebase وSupabase لضمان أمن وفاعلية البنية التحتية."
+  ],
+  "user_flow_summary": [
+    "المستخدم يبدأ بتسجيل الدخول أو إنشاء حساب جديد مع اختيار الهدف التعليمي.",
+    "المعلم يدخل إلى لوحة التحكم الرئيسية ليتمكن من إنشاء الجلسات وتعيين الواجبات للطلاب.",
+    "الطالب يصل إلى لوحة التحكم لمتابعة الجلسات التعليمية والتمارين المناطة به.",
+    "المعلم والطالب يتبادلان الرسائل المباشرة لدعم العملية التعليمية.",
+    "كل من الطالب والمعلم يمكنهم تحديث بيانات ملفهم الشخصي من خلال صفحة الإعدادات.",
+    "الطالب يتابع تقدم الحفظ والتعلم ويكمل الواجبات المنزلية عبر الصفحات المخصصة."
+  ],
+  "validation_criteria": [
+    "نجاح تسجيل الدخول وإنشاء الحسابات مع دعم اختيار الهدف التعليمي.",
+    "تمكين المعلمات من إنشاء وتعديل وحذف الجلسات والواجبات.",
+    "عرض بيانات الطلاب وجلساتهم بشكل صحيح ودقيق في لوحات التحكم.",
+    "تمكين الطلاب من رؤية واجباتهم وأداءها بشكل تفاعلي.",
+    "عمل نظام الرسائل بشكل فوري وموثوق بين المستخدمين.",
+    "ظهور إشعارات Toast في الحالات المناسبة لإبلاغ المستخدمين بالحالة.",
+    "تحديث بيانات المستخدمين يتم بشكل آمن وموثوق.",
+    "التكامل السلس مع Firebase/Supabase لضمان أمن البيانات وسرعة الأداء."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "React 18",
+      "Vite",
+      "Firebase",
+      "Lucide React Icons",
+      "CSS"
+    ],
+    "features": [
+      {
+        "name": "Authentication",
+        "description": "User authentication system with login, signup, and onboarding flows. Supports username-based authentication with Firebase/Supabase integration.",
+        "files": [
+          "src/pages/Auth/LoginPage.tsx",
+          "src/pages/Auth/SignupPage.tsx",
+          "src/pages/Auth/OnboardingPage.tsx",
+          "src/contexts/AuthContext.tsx"
+        ]
+      },
+      {
+        "name": "Teacher Dashboard",
+        "description": "Main dashboard for teachers showing overview of their sessions, students, and activities.",
+        "files": [
+          "src/pages/Teacher/TeacherDashboard.tsx"
+        ]
+      },
+      {
+        "name": "Teacher Sessions Management",
+        "description": "Page for teachers to view, create, and manage their teaching sessions with students.",
+        "files": [
+          "src/pages/Teacher/TeacherSessionsPage.tsx",
+          "src/hooks/useSessions.ts"
+        ]
+      },
+      {
+        "name": "Teacher Students Management",
+        "description": "Page for teachers to manage their students, view progress, and assign homework.",
+        "files": [
+          "src/pages/Teacher/TeacherStudentsPage.tsx",
+          "src/hooks/useStudents.ts"
+        ]
+      },
+      {
+        "name": "Teacher Homework",
+        "description": "Page for teachers to create and manage homework assignments for students.",
+        "files": [
+          "src/pages/Teacher/TeacherHomeworkPage.tsx",
+          "src/hooks/useHomework.ts"
+        ]
+      },
+      {
+        "name": "Teacher Profile Settings",
+        "description": "Profile and settings page for teachers to manage their account information.",
+        "files": [
+          "src/pages/Teacher/TeacherProfileSettings.tsx"
+        ]
+      },
+      {
+        "name": "Student Dashboard",
+        "description": "Main dashboard for students showing their learning progress, upcoming sessions, and homework.",
+        "files": [
+          "src/pages/Student/StudentDashboard.tsx"
+        ]
+      },
+      {
+        "name": "Student Sessions",
+        "description": "Page for students to view their scheduled sessions with teachers.",
+        "files": [
+          "src/pages/Student/SessionsPage.tsx",
+          "src/hooks/useSessions.ts"
+        ]
+      },
+      {
+        "name": "Student Learning",
+        "description": "Interactive learning page for students to study Quran.",
+        "files": [
+          "src/pages/Student/LearningPage.tsx"
+        ]
+      },
+      {
+        "name": "Student Homework",
+        "description": "Page for students to view and complete their assigned homework.",
+        "files": [
+          "src/pages/Student/HomeworkPage.tsx",
+          "src/hooks/useHomework.ts"
+        ]
+      },
+      {
+        "name": "Student Profile Settings",
+        "description": "Profile and settings page for students to manage their account information.",
+        "files": [
+          "src/pages/Student/StudentProfileSettings.tsx"
+        ]
+      },
+      {
+        "name": "Messaging System",
+        "description": "Messaging functionality for communication between teachers and students.",
+        "files": [
+          "src/hooks/useMessages.ts"
+        ]
+      },
+      {
+        "name": "Toast Notifications",
+        "description": "Toast notification system for displaying feedback messages to users.",
+        "files": [
+          "src/contexts/ToastContext.tsx"
+        ]
+      },
+      {
+        "name": "Teachers Data Hook",
+        "description": "Custom hook for fetching and managing teachers data.",
+        "files": [
+          "src/hooks/useTeachers.ts"
+        ]
+      },
+      {
+        "name": "Layout Components",
+        "description": "Shared layout components used across the application.",
+        "files": [
+          "src/components/Layout"
+        ]
+      },
+      {
+        "name": "Homework Components",
+        "description": "Reusable homework-related components.",
+        "files": [
+          "src/components/Homework"
+        ]
+      },
+      {
+        "name": "Firebase Integration",
+        "description": "Firebase configuration and initialization for authentication and database.",
+        "files": [
+          "src/lib/firebase.ts"
+        ]
+      },
+      {
+        "name": "App Router",
+        "description": "Main application component with routing logic for different user roles.",
+        "files": [
+          "src/App.tsx"
+        ]
+      }
+    ]
+  }
+}

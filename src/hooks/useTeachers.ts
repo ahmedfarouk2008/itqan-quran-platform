@@ -27,7 +27,8 @@ export const useTeachers = (): UseTeachersReturn => {
             const q = query(
                 collection(db, 'users'), // Changed from 'profiles' to 'users' based on AuthContext
                 where('role', '==', 'teacher'),
-                orderBy('rating', 'desc')
+                where('role', '==', 'teacher')
+                // orderBy('rating', 'desc') // Removed to include teachers with null rating
             );
 
             const querySnapshot = await getDocs(q);

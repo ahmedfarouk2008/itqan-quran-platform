@@ -5,9 +5,9 @@ import {
     Calendar,
     GraduationCap,
     ClipboardCheck,
-    MessageSquare,
     LogOut,
     Menu,
+    Settings,
     X
 } from 'lucide-react';
 import { UserRole, User as UserType } from '../../types';
@@ -35,14 +35,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Navigation items based on role
-    const getNavItems = () => {
+    interface NavItem {
+        id: string;
+        label: string;
+        icon: React.ElementType;
+        badge?: number;
+    }
+
+    const getNavItems = (): NavItem[] => {
         if (user.role === UserRole.TEACHER) {
             return [
                 { id: 'dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
                 { id: 'sessions', label: 'الجلسات', icon: Calendar },
                 { id: 'students', label: 'الطلاب', icon: GraduationCap },
                 { id: 'homework', label: 'الواجبات', icon: ClipboardCheck },
-                { id: 'messages', label: 'الرسائل', icon: MessageSquare, badge: 2 },
             ];
         } else {
             return [
@@ -50,7 +56,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 { id: 'sessions', label: 'الجلسات', icon: Calendar },
                 { id: 'learning', label: 'التعلّم', icon: BookOpen },
                 { id: 'homework', label: 'الواجب', icon: ClipboardCheck },
-                { id: 'messages', label: 'الرسائل', icon: MessageSquare },
+                { id: 'settings', label: 'الإعدادات', icon: Settings },
             ];
         }
     };

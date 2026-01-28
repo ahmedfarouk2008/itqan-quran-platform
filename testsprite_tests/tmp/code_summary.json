@@ -1,0 +1,146 @@
+{
+    "tech_stack": [
+        "TypeScript",
+        "React 18",
+        "Vite",
+        "Firebase",
+        "Lucide React Icons",
+        "CSS"
+    ],
+    "features": [
+        {
+            "name": "Authentication",
+            "description": "User authentication system with login, signup, and onboarding flows. Supports username-based authentication with Firebase/Supabase integration.",
+            "files": [
+                "src/pages/Auth/LoginPage.tsx",
+                "src/pages/Auth/SignupPage.tsx",
+                "src/pages/Auth/OnboardingPage.tsx",
+                "src/contexts/AuthContext.tsx"
+            ]
+        },
+        {
+            "name": "Teacher Dashboard",
+            "description": "Main dashboard for teachers showing overview of their sessions, students, and activities.",
+            "files": [
+                "src/pages/Teacher/TeacherDashboard.tsx"
+            ]
+        },
+        {
+            "name": "Teacher Sessions Management",
+            "description": "Page for teachers to view, create, and manage their teaching sessions with students.",
+            "files": [
+                "src/pages/Teacher/TeacherSessionsPage.tsx",
+                "src/hooks/useSessions.ts"
+            ]
+        },
+        {
+            "name": "Teacher Students Management",
+            "description": "Page for teachers to manage their students, view progress, and assign homework.",
+            "files": [
+                "src/pages/Teacher/TeacherStudentsPage.tsx",
+                "src/hooks/useStudents.ts"
+            ]
+        },
+        {
+            "name": "Teacher Homework",
+            "description": "Page for teachers to create and manage homework assignments for students.",
+            "files": [
+                "src/pages/Teacher/TeacherHomeworkPage.tsx",
+                "src/hooks/useHomework.ts"
+            ]
+        },
+        {
+            "name": "Teacher Profile Settings",
+            "description": "Profile and settings page for teachers to manage their account information.",
+            "files": [
+                "src/pages/Teacher/TeacherProfileSettings.tsx"
+            ]
+        },
+        {
+            "name": "Student Dashboard",
+            "description": "Main dashboard for students showing their learning progress, upcoming sessions, and homework.",
+            "files": [
+                "src/pages/Student/StudentDashboard.tsx"
+            ]
+        },
+        {
+            "name": "Student Sessions",
+            "description": "Page for students to view their scheduled sessions with teachers.",
+            "files": [
+                "src/pages/Student/SessionsPage.tsx",
+                "src/hooks/useSessions.ts"
+            ]
+        },
+        {
+            "name": "Student Learning",
+            "description": "Interactive learning page for students to study Quran.",
+            "files": [
+                "src/pages/Student/LearningPage.tsx"
+            ]
+        },
+        {
+            "name": "Student Homework",
+            "description": "Page for students to view and complete their assigned homework.",
+            "files": [
+                "src/pages/Student/HomeworkPage.tsx",
+                "src/hooks/useHomework.ts"
+            ]
+        },
+        {
+            "name": "Student Profile Settings",
+            "description": "Profile and settings page for students to manage their account information.",
+            "files": [
+                "src/pages/Student/StudentProfileSettings.tsx"
+            ]
+        },
+        {
+            "name": "Messaging System",
+            "description": "Messaging functionality for communication between teachers and students.",
+            "files": [
+                "src/hooks/useMessages.ts"
+            ]
+        },
+        {
+            "name": "Toast Notifications",
+            "description": "Toast notification system for displaying feedback messages to users.",
+            "files": [
+                "src/contexts/ToastContext.tsx"
+            ]
+        },
+        {
+            "name": "Teachers Data Hook",
+            "description": "Custom hook for fetching and managing teachers data.",
+            "files": [
+                "src/hooks/useTeachers.ts"
+            ]
+        },
+        {
+            "name": "Layout Components",
+            "description": "Shared layout components used across the application.",
+            "files": [
+                "src/components/Layout"
+            ]
+        },
+        {
+            "name": "Homework Components",
+            "description": "Reusable homework-related components.",
+            "files": [
+                "src/components/Homework"
+            ]
+        },
+        {
+            "name": "Firebase Integration",
+            "description": "Firebase configuration and initialization for authentication and database.",
+            "files": [
+                "src/lib/firebase.ts"
+            ]
+        },
+        {
+            "name": "App Router",
+            "description": "Main application component with routing logic for different user roles.",
+            "files": [
+                "src/App.tsx"
+            ]
+        }
+    ]
+}

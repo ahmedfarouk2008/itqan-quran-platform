@@ -37,6 +37,11 @@ export type Profile = {
     bio: string | null;
     specialty: string[] | null;
     rating: number | null;
+    status: 'active' | 'inactive' | 'new';
+    current_surah: string | null;
+    memorized_ayahs: number | null;
+    teacher_notes: Array<{ type: 'warning' | 'success'; text: string; date: string }> | null;
+    total_surahs: number | null;
 };
 
 export type Session = {
@@ -50,6 +55,7 @@ export type Session = {
     scheduled_at: string;
     notes: string | null;
     summary: Record<string, unknown> | null;
+    meeting_link?: string | null;
 };
 
 export type Homework = {

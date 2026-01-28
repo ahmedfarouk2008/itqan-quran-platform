@@ -5,6 +5,7 @@ import {
     BookOpen,
     Clock,
     ChevronLeft,
+    ChevronRight,
     Play,
     AlertCircle,
     Loader2
@@ -75,22 +76,45 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
 
     // Weekly Calendar Helper
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+
+    const nextMonth = () => {
+        setCurrentMonth(prev => {
+            const next = new Date(prev);
+            next.setMonth(prev.getMonth() + 1);
+            return next;
+        });
+    };
+
+    const prevMonth = () => {
+        setCurrentMonth(prev => {
+            const prevDate = new Date(prev);
+            prevDate.setMonth(prev.getMonth() - 1);
+            return prevDate;
+        });
+    };
 
     const renderWeeklyCalendar = () => {
         const days = [];
         const today = new Date();
         const currentSelection = selectedDate;
 
-        // Generate 14 days (last 3 days + next 10 days) to allow some navigation
-        const startDate = new Date(today);
-        startDate.setDate(today.getDate() - 3);
+        // Get start and end of the current viewed month
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
 
-        for (let i = 0; i < 14; i++) {
-            const date = new Date(startDate);
-            date.setDate(startDate.getDate() + i);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth();
-            const isSelected = date.getDate() === currentSelection.getDate() && date.getMonth() === currentSelection.getMonth();
+        for (let i = 1; i <= daysInMonth; i++) {
+            const date = new Date(year, month, i);
+
+            const isToday = date.getDate() === today.getDate() &&
+                date.getMonth() === today.getMonth() &&
+                date.getFullYear() === today.getFullYear();
+
+            const isSelected = date.getDate() === currentSelection.getDate() &&
+                date.getMonth() === currentSelection.getMonth() &&
+                date.getFullYear() === currentSelection.getFullYear();
 
             const dayName = date.toLocaleDateString('ar-EG', { weekday: 'short' });
             const dayNum = date.getDate();
@@ -168,9 +192,44 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
             <div className="weekly-calendar-widget">
                 <div className="widget-header">
                     <h3>جدول الأسبوع</h3>
-                    <span className="selected-date-label">
-                        {selectedDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </span>
+                    {/* Calendar Navigation Header */}
+                    <div className="calendar-navigation" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button
+                            onClick={nextMonth}
+                            className="nav-btn"
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                        <span className="selected-date-label">
+                            {currentMonth.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button
+                            onClick={prevMonth}
+                            className="nav-btn"
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                    </div>
                 </div>
                 <div className="days-scroll-container">
                     {renderWeeklyCalendar()}

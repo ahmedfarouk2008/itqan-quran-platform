@@ -68,7 +68,7 @@ const emptyRecordData = {
     notes: ''
 };
 
-const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate }) => {
+const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _onNavigate }) => {
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [records, setRecords] = useState<FollowUpRecord[]>(initialRecords);

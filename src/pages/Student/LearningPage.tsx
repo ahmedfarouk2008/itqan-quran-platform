@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Check,
   Star,
   AlertCircle
 } from 'lucide-react';

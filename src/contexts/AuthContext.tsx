@@ -137,7 +137,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 bio: null,
                 specialty: null,
-                rating: null
+                rating: null,
+                status: 'new',
+                current_surah: null,
+                memorized_ayahs: 0,
+                teacher_notes: [],
+                total_surahs: 0
             };
 
             await setDoc(doc(db, 'users', user.uid), newProfile);

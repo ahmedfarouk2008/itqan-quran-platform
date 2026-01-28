@@ -252,15 +252,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
         }
     };
 
-    const getTypeBadge = (type: Session['type']) => {
-        const colors: Record<Session['type'], string> = {
-            'حفظ': 'hifz',
-            'مراجعة': 'review',
-            'تجويد': 'tajweed',
-            'تفسير': 'tafseer',
-        };
-        return <span className={`type-badge ${colors[type]}`}>{type}</span>;
-    };
+
 
     const todaySessions = sessions.filter(
         (s) => s.date === selectedDate.toISOString().split('T')[0]

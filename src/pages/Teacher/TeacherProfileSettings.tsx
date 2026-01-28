@@ -6,8 +6,7 @@ import {
     Lock,
     Save,
     Camera,
-    BookOpen,
-    Loader2
+    BookOpen
 } from 'lucide-react';
 import { updatePassword as firebaseUpdatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { useAuth } from '../../contexts/AuthContext';

@@ -13,7 +13,7 @@ import '../../styles/pages/profile-settings.css';
 
 const StudentProfileSettings: React.FC = () => {
     const { profile, updateProfile } = useAuth();
-    const { success, error } = useToast();
+    const { success } = useToast();
     const [isUploading, setIsUploading] = useState(false);
 
     const [name, setName] = useState(profile?.name || '');

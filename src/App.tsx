@@ -18,7 +18,6 @@ import {
     TeacherStudentsPage,
     TeacherSessionsPage,
     TeacherHomeworkPage,
-    TeacherProfileSettings,
 } from './pages/Teacher';
 import AppLayout from './components/Layout/AppLayout';
 

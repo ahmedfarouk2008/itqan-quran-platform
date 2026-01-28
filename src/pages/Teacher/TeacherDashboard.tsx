@@ -7,7 +7,6 @@ import {
     ChevronLeft,
     Play,
     AlertCircle,
-    ChevronRight,
     Loader2
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -50,21 +49,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
         };
     }, [firebaseStudents, firebaseSessions, firebasePending]);
 
-    // Map Firebase sessions to display format
-    const upcomingSessions = useMemo(() => {
-        return firebaseSessions.slice(0, 3).map((session, index) => {
-            const student = firebaseStudents.find(s => s.id === session.student_id);
-            return {
-                id: session.id,
-                studentName: student ? student.name : 'طالب/ة',
-                time: new Date(session.scheduled_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
-                duration: session.duration,
-                type: session.type,
-                surah: session.notes || 'غير محدد',
-                isNext: index === 0,
-            };
-        });
-    }, [firebaseSessions, firebaseStudents]);
+
 
     // Map submitted homework (pending teacher review) to reviews
     const pendingReviews = useMemo(() => {
@@ -89,16 +74,24 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
     });
 
     // Weekly Calendar Helper
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
     const renderWeeklyCalendar = () => {
         const days = [];
         const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay()); // Start from Sunday
+        const currentSelection = selectedDate;
 
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(startOfWeek);
-            date.setDate(startOfWeek.getDate() + i);
-            const isToday = date.getDate() === today.getDate();
+        // Generate 14 days (last 3 days + next 10 days) to allow some navigation
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 3);
+
+        for (let i = 0; i < 14; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+
+            const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth();
+            const isSelected = date.getDate() === currentSelection.getDate() && date.getMonth() === currentSelection.getMonth();
+
             const dayName = date.toLocaleDateString('ar-EG', { weekday: 'short' });
             const dayNum = date.getDate();
             const dateStr = date.toISOString().split('T')[0];
@@ -107,17 +100,41 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
             const sessionsCount = allSessions.filter(s => s.scheduled_at.startsWith(dateStr)).length;
 
             days.push(
-                <div key={i} className={`calendar-day-widget ${isToday ? 'active' : ''}`}>
+                <div
+                    key={i}
+                    className={`calendar-day-widget ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
+                    onClick={() => setSelectedDate(date)}
+                >
                     <span className="day-name">{dayName}</span>
                     <span className="day-num">{dayNum}</span>
-                    {sessionsCount > 0 && (
-                        <span className="session-dot" title={`${sessionsCount} جلسات`}></span>
-                    )}
+                    <div className="dots-container">
+                        {sessionsCount > 0 && <span className="session-dot"></span>}
+                        {sessionsCount > 2 && <span className="session-dot"></span>}
+                    </div>
                 </div>
             );
         }
         return days;
     };
+
+    // Filter sessions based on selected date
+    const displayedSessions = useMemo(() => {
+        const selectedDateStr = selectedDate.toISOString().split('T')[0];
+        const sessionsForDate = firebaseSessions.filter(s => s.scheduled_at.startsWith(selectedDateStr));
+
+        return sessionsForDate.map((session) => {
+            const student = firebaseStudents.find(s => s.id === session.student_id);
+            return {
+                id: session.id,
+                studentName: student ? student.name : 'طالب/ة',
+                time: new Date(session.scheduled_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                duration: session.duration,
+                type: session.type,
+                surah: session.notes || 'غير محدد',
+                isNext: false, // Only relevant for future sessions logic if needed
+            };
+        });
+    }, [selectedDate, firebaseSessions, firebaseStudents]);
 
     if (isLoading) {
         return (
@@ -151,12 +168,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
             <div className="weekly-calendar-widget">
                 <div className="widget-header">
                     <h3>جدول الأسبوع</h3>
-                    <div className="nav-arrows">
-                        <button><ChevronRight size={16} /></button>
-                        <button><ChevronLeft size={16} /></button>
-                    </div>
+                    <span className="selected-date-label">
+                        {selectedDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </span>
                 </div>
-                <div className="days-container">
+                <div className="days-scroll-container">
                     {renderWeeklyCalendar()}
                 </div>
             </div>
@@ -197,12 +213,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
             {/* Main Content */}
             {/* ... (rest of the render remains the same) */}
             <div className="dashboard-content">
-                {/* Today's Sessions */}
+                {/* Daily Sessions */}
                 <div className="content-section sessions-section">
                     <div className="section-header">
                         <h2>
                             <Clock size={20} />
-                            جلسات اليوم
+                            جلسات {selectedDate.getDate() === new Date().getDate() ? 'اليوم' : selectedDate.toLocaleDateString('ar-EG', { weekday: 'long' })}
                         </h2>
                         <button className="view-all-btn" onClick={() => onNavigate('teacher-sessions')}>
                             عرض الكل
@@ -211,11 +227,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                     </div>
 
                     <div className="sessions-list">
-                        {upcomingSessions.length === 0 ? (
+                        {displayedSessions.length === 0 ? (
                             <div className="empty-state">
-                                <p>لا توجد جلسات قادمة اليوم</p>
+                                <p>لا توجد جلسات في هذا اليوم</p>
                             </div>
-                        ) : upcomingSessions.map((session) => (
+                        ) : displayedSessions.map((session) => (
                             <div key={session.id} className={`session-card ${session.isNext ? 'next' : ''}`}>
                                 {session.isNext && <div className="next-badge">التالية</div>}
                                 <div className="session-time">

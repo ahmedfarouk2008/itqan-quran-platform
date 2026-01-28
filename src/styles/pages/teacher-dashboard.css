@@ -221,7 +221,117 @@
         grid-template-columns: 1fr;
     }
 
+
     .quick-actions {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* Weekly Calendar Widget Styling */
+.weekly-calendar-widget {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+}
+
+.selected-date-label {
+    color: var(--color-primary-600);
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: var(--color-primary-50);
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.days-scroll-container {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    /* For scrollbar space */
+    scrollbar-width: thin;
+    /* Firefox */
+}
+
+.days-scroll-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.days-scroll-container::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+
+.calendar-day-widget {
+    min-width: 60px;
+    height: 80px;
+    background: #f8fafc;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.calendar-day-widget:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+}
+
+.calendar-day-widget.selected {
+    background: var(--color-primary-600);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    /* Assuming emerald green primary */
+    transform: scale(1.05);
+    border: none;
+}
+
+.calendar-day-widget.today {
+    border: 1px solid var(--color-primary-600);
+}
+
+.calendar-day-widget.selected.today {
+    border: none;
+}
+
+.day-name {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.day-num {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.dots-container {
+    display: flex;
+    gap: 3px;
+    position: absolute;
+    bottom: 8px;
+}
+
+.session-dot {
+    width: 4px;
+    height: 4px;
+    background-color: var(--color-primary-500);
+    border-radius: 50%;
+}
+
+.calendar-day-widget.selected .session-dot {
+    background-color: white;
 }

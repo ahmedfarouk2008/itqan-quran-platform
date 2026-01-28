@@ -192,15 +192,7 @@ const SessionsPage: React.FC<SessionsPageProps> = () => {
                                 : 'ستظهر هنا جلساتك المكتملة'
                             }
                         </p>
-                        {activeTab === 'upcoming' && (
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => setShowBookingModal(true)}
-                            >
-                                <Plus size={18} />
-                                <span>احجز جلسة الآن</span>
-                            </button>
-                        )}
+
                     </div>
                 )}
             </div>

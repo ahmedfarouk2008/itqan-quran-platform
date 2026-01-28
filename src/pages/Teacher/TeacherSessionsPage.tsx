@@ -262,9 +262,13 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
         (s) => filterStatus === 'all' || s.status === filterStatus
     );
 
-    const navigateDate = (direction: 'prev' | 'next') => {
+    const navigateMonth = (direction: 'prev' | 'next') => {
         const newDate = new Date(selectedDate);
-        newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
+        if (direction === 'next') {
+            newDate.setMonth(newDate.getMonth() + 1);
+        } else {
+            newDate.setMonth(newDate.getMonth() - 1);
+        }
         setSelectedDate(newDate);
     };
 
@@ -356,7 +360,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
             {activeTab === 'calendar' && (
                 <div className="calendar-view">
                     <div className="calendar-header">
-                        <button className="nav-btn" onClick={() => navigateDate('next')}>
+                        <button className="nav-btn" onClick={() => navigateMonth('prev')}>
                             <ChevronRight size={20} />
                         </button>
                         <h2>
@@ -365,7 +369,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                                 year: 'numeric',
                             })}
                         </h2>
-                        <button className="nav-btn" onClick={() => navigateDate('prev')}>
+                        <button className="nav-btn" onClick={() => navigateMonth('next')}>
                             <ChevronLeft size={20} />
                         </button>
                     </div>

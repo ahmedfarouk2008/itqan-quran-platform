@@ -244,7 +244,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                     </div>
                     <div className="stat-info">
                         <span className="stat-value">{dashboardStats.totalStudents}</span>
-                        <span className="stat-label">طالباتي</span>
+                        <span className="stat-label">طلابي</span>
                     </div>
                 </div>
 

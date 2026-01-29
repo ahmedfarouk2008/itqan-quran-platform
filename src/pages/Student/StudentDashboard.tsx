@@ -6,11 +6,10 @@ import {
     Video,
     ChevronLeft,
     AlertCircle,
-    CheckCircle,
     Loader2
 } from 'lucide-react';
-import { User, HomeworkStatus } from '../../types';
-import { useSessions, useHomework, useTeachers } from '../../hooks';
+import { User } from '../../types';
+import { useSessions, useTeachers } from '../../hooks';
 import { useFollowUpRecords } from '../../hooks/useFollowUpRecords';
 import '../../styles/pages/student-dashboard.css';
 
@@ -25,13 +24,12 @@ interface StudentDashboardProps {
 
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate }) => {
     const { upcomingSessions, isLoading: sessionsLoading } = useSessions();
-    const { pendingHomework, isLoading: homeworkLoading } = useHomework();
     const { teachers, isLoading: teachersLoading } = useTeachers();
 
     // Fetch follow-up records for the current student
     const { records: followUpRecords, isLoading: recordsLoading } = useFollowUpRecords(user.id);
 
-    const isLoading = sessionsLoading || homeworkLoading || teachersLoading || recordsLoading;
+    const isLoading = sessionsLoading || teachersLoading || recordsLoading;
 
     // Get latest teacher note
     const latestNote = useMemo(() => {
@@ -53,12 +51,6 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
             teacherName: teacher ? teacher.name : 'المعلمة'
         };
     }, [upcomingSessions, teachers]);
-
-    // Get next homework
-    const nextHomework = useMemo(() => {
-        if (!pendingHomework || pendingHomework.length === 0) return null;
-        return pendingHomework[0]; // Get first pending homework
-    }, [pendingHomework]);
 
     const formatSessionTime = (date: string) => {
         const d = new Date(date);
@@ -84,35 +76,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
         return { dayLabel, time };
     };
 
-    const getHomeworkStatusLabel = (status: HomeworkStatus | string) => {
-        switch (status) {
-            case HomeworkStatus.NOT_STARTED:
-            case 'لم يبدأ':
-                return { label: 'لم يبدأ', class: 'status-pending' };
-            case HomeworkStatus.SUBMITTED:
-            case 'تم الإرسال':
-                return { label: 'تم الإرسال', class: 'status-submitted' };
-            case HomeworkStatus.REVIEWED:
-            case 'تم المراجعة':
-                return { label: 'تم المراجعة', class: 'status-completed' };
-            default:
-                return { label: status, class: '' };
-        }
-    };
-
     const sessionTime = nextSession ? formatSessionTime(nextSession.scheduled_at) : null;
-    const homeworkStatus = nextHomework ? getHomeworkStatusLabel(nextHomework.status) : null;
-
-    // Calculate days until due
-    const getDaysUntilDue = (dueDate: string) => {
-        const due = new Date(dueDate);
-        const now = new Date();
-        const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        if (diff === 0) return 'اليوم';
-        if (diff === 1) return 'غداً';
-        if (diff < 0) return 'متأخر';
-        return `بعد ${diff} أيام`;
-    };
 
     if (isLoading) {
         return (
@@ -228,44 +192,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                     </div>
                 </div>
 
-                {/* Homework Card */}
-                <div className="dashboard-card homework-card">
-                    <div className="card-header">
-                        <div className="card-icon card-icon-homework">
-                            <CheckCircle size={20} />
-                        </div>
-                        <h3 className="card-title">آخر واجب</h3>
-                    </div>
-
-                    {nextHomework ? (
-                        <div className="card-content">
-                            <div className="homework-info">
-                                <h4 className="homework-title">{nextHomework.title}</h4>
-                                <div className="homework-meta">
-                                    <span className={`badge ${homeworkStatus?.class}`}>
-                                        {homeworkStatus?.label}
-                                    </span>
-                                    <span className="homework-due">
-                                        <Clock size={14} />
-                                        {getDaysUntilDue(nextHomework.due_date)}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <button
-                                className="btn btn-primary w-full"
-                                onClick={() => onNavigate('homework')}
-                            >
-                                {nextHomework.status === 'لم يبدأ' ? 'ابدأ الآن' : 'عرض التفاصيل'}
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="card-empty">
-                            <CheckCircle size={32} className="empty-icon" />
-                            <p>لا توجد واجبات حالياً</p>
-                        </div>
-                    )}
-                </div>
+                {/* Teacher Note Card */}
+                {/* Note card moved up to fill the gap, effectively just removing the homework card div before it */}
 
                 {/* Teacher Note Card */}
                 <div className="dashboard-card note-card">

@@ -19,7 +19,7 @@ import { UserLevel } from '../../types'; // Import UserLevel enum
 import '../../styles/pages/teacher-students.css';
 
 // ==============================================
-// Teacher Students Page - إدارة الطالبات
+// Teacher Students Page - إدارة الطلاب
 // ==============================================
 
 interface TeacherStudentsPageProps {
@@ -182,7 +182,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                 <div className="header-content">
                     <h1>
                         <Users size={28} />
-                        إدارة الطالبات
+                        إدارة الطلاب
                     </h1>
                     <p>إجمالي {stats.total} طالب</p>
                 </div>

@@ -171,8 +171,8 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
                         </div>
                     </header>
 
-                    <div className="controls-bar">
-                        <div className="search-wrapper">
+                    <div className="search-filter-bar">
+                        <div className="search-input">
                             <Search size={20} />
                             <input
                                 type="text"

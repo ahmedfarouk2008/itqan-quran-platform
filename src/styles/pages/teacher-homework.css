@@ -1,133 +1,302 @@
 /* ==============================================
-   Teacher Homework Page - إصلاح شامل ونهائي
+   Teacher Homework Page - Follow Up Records
    ============================================== */
 
 .teacher-homework-page {
     padding: var(--space-6);
     background-color: var(--color-neutral-50);
+    min-height: 100vh;
 }
 
-/* Tabs */
-.tabs-container {
+/* Header */
+.page-header {
+    margin-bottom: var(--space-6);
+}
+
+.header-content h1 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 1.8rem;
+    color: var(--color-neutral-900);
+    margin: 0 0 var(--space-2);
+}
+
+.header-content p {
+    color: var(--color-neutral-500);
+    margin: 0;
+}
+
+/* Search Bar - Matches Teacher Students Page */
+.search-filter-bar {
     display: flex;
     gap: var(--space-4);
-    background: white;
-    padding: var(--space-2);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     margin-bottom: var(--space-8);
-    flex-wrap: wrap;
 }
 
-.tab-btn {
-    padding: var(--space-3) var(--space-6);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    font-weight: 600;
-    color: var(--color-neutral-600);
+.search-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: white;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid transparent;
     transition: all 0.2s;
 }
 
-.tab-btn:hover {
-    background: var(--color-neutral-50);
+.search-input:focus-within {
+    border-color: var(--color-primary-300);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.tab-btn.active {
-    background: var(--color-primary-600);
-    color: white;
+.search-input svg {
+    color: var(--color-neutral-400);
 }
 
-/* Homework List */
-.homework-list {
-    display: flex;
-    flex-direction: column;
+.search-input input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+    background: transparent;
+}
+
+/* Students Grid - Grid Layout */
+.students-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: var(--space-6);
 }
 
-.homework-card {
+.student-card {
     background: white;
-    border: none;
     border-radius: var(--radius-xl);
     padding: var(--space-6);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.student-info {
-    display: flex;
     align-items: center;
     gap: var(--space-4);
-}
-
-.student-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--color-primary-100);
-    color: var(--color-primary-700);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-}
-
-/* Audio Player */
-.audio-player {
-    background: var(--color-neutral-50);
-    padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    margin: var(--space-2) 0;
-}
-
-.play-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: white;
-    border: 1px solid var(--color-neutral-200);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-primary-600);
     cursor: pointer;
-}
-
-.audio-progress {
-    flex: 1;
-    height: 4px;
-    background: var(--color-neutral-200);
-    border-radius: 2px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
     position: relative;
 }
 
-.progress-fill {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: var(--color-primary-600);
-    border-radius: 2px;
-    width: 30%;
-    /* Mock progress */
+.student-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary-200);
 }
 
-/* Actions */
-.card-actions {
+.student-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--color-primary-50);
+    color: var(--color-primary-600);
     display: flex;
-    gap: var(--space-3);
-    border-top: 1px solid var(--color-neutral-100);
-    padding-top: var(--space-4);
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.student-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.student-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-neutral-900);
+}
+
+.student-level {
+    font-size: 0.85rem;
+    color: var(--color-primary-600);
+    font-weight: 600;
+    background: var(--color-primary-50);
+    padding: 2px 10px;
+    border-radius: 12px;
+    width: fit-content;
+}
+
+.last-update {
+    font-size: 0.8rem;
+    color: var(--color-neutral-400);
+    margin-top: 2px;
+}
+
+.arrow-icon {
+    color: var(--color-neutral-300);
+    transition: transform 0.2s;
+}
+
+.student-card:hover .arrow-icon {
+    transform: translateX(-4px);
+    color: var(--color-primary-500);
+}
+
+/* Student Details View */
+.student-details-view {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.details-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+    background: white;
+    padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: var(--color-neutral-50);
+    color: var(--color-neutral-600);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: var(--radius-lg);
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+}
+
+.student-header-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.student-header-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--color-neutral-800);
+}
+
+.level-badge {
+    background: var(--color-primary-100);
+    color: var(--color-primary-700);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.add-record-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-primary-600);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px var(--color-primary-200);
+}
+
+.add-record-btn:hover {
+    background: var(--color-primary-700);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -1px var(--color-primary-300);
+}
+
+/* Modal Enhancements */
+.add-session-modal {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+    background: white;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--color-neutral-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.session-form {
+    padding: 2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--color-neutral-700);
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--color-neutral-100);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    background: var(--color-neutral-50);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    background: white;
+    box-shadow: 0 0 0 4px var(--color-primary-50);
+}
+
+.column-group {
+    background: var(--color-neutral-50);
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--color-neutral-200);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleUp {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .students-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr !important;
+    }
 }

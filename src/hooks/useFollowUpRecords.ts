@@ -15,6 +15,7 @@ interface UseFollowUpRecordsReturn {
     addRecord: (record: Omit<FollowUpRecord, 'id'>) => Promise<{ error: Error | null }>;
     updateRecord: (id: string, updates: Partial<FollowUpRecord>) => Promise<{ error: Error | null }>;
     deleteRecord: (id: string) => Promise<{ error: Error | null }>;
+    refresh: () => Promise<void>;
 }
 
 export const useFollowUpRecords = (studentId: string | null): UseFollowUpRecordsReturn => {
@@ -131,6 +132,7 @@ export const useFollowUpRecords = (studentId: string | null): UseFollowUpRecords
         error,
         addRecord,
         updateRecord,
-        deleteRecord
+        deleteRecord,
+        refresh: fetchRecords
     };
 };

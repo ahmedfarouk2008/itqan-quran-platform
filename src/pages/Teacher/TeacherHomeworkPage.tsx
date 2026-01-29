@@ -72,7 +72,7 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
             id: s.id,
             name: s.name,
             avatar: s.avatar_url,
-            level: s.level || 'غير محدد',
+            level: s.level || 'المستوى العام',
             lastUpdate: s.updated_at ? new Date(s.updated_at).toLocaleDateString('ar-EG') : 'جديد'
         }));
 

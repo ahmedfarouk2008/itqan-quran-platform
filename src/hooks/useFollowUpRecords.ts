@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { FollowUpRecord } from '../components/Homework/FollowUpTable';
 
@@ -36,10 +36,7 @@ export const useFollowUpRecords = (studentId: string | null): UseFollowUpRecords
 
             const q = query(
                 collection(db, 'follow_up_records'),
-                where('student_id', '==', studentId),
-                // We can also add teacher_id check if we want strict privacy, 
-                // but usually teachers can see records for their students.
-                orderBy('date', 'desc')
+                where('student_id', '==', studentId)
             );
 
             const querySnapshot = await getDocs(q);
@@ -47,6 +44,9 @@ export const useFollowUpRecords = (studentId: string | null): UseFollowUpRecords
             querySnapshot.forEach((doc) => {
                 recordsData.push({ ...doc.data(), id: doc.id } as FollowUpRecord);
             });
+
+            // Client-side sort
+            recordsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
             setRecords(recordsData);
         } catch (err) {
@@ -68,8 +68,7 @@ export const useFollowUpRecords = (studentId: string | null): UseFollowUpRecords
 
         const q = query(
             collection(db, 'follow_up_records'),
-            where('student_id', '==', studentId),
-            orderBy('date', 'desc')
+            where('student_id', '==', studentId)
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -77,6 +76,9 @@ export const useFollowUpRecords = (studentId: string | null): UseFollowUpRecords
             snapshot.forEach((doc) => {
                 recordsData.push({ ...doc.data(), id: doc.id } as FollowUpRecord);
             });
+            // Client-side sort
+            recordsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
             setRecords(recordsData);
             setIsLoading(false);
         }, (err) => {

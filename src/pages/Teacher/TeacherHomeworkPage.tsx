@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Search,
     ChevronLeft,
@@ -6,10 +6,13 @@ import {
     User,
     BookOpen,
     Save,
-    X
+    X,
+    Loader
 } from 'lucide-react';
 import FollowUpTable, { FollowUpRecord } from '../../components/Homework/FollowUpTable';
 import '../../styles/pages/teacher-homework.css';
+import { useStudents } from '../../hooks/useStudents';
+import { useFollowUpRecords } from '../../hooks/useFollowUpRecords';
 
 // ==============================================
 // Teacher Homework Page - متابعة الحفظ والمراجعة
@@ -26,35 +29,6 @@ interface Student {
     lastUpdate: string;
 }
 
-// Mock Students Data
-const students: Student[] = [
-    { id: '1', name: 'أحمد محمد', level: 'المستوى الثالث', lastUpdate: 'اليوم' },
-    { id: '2', name: 'فاطمة علي', level: 'المستوى الرابع', lastUpdate: 'أمس' },
-    { id: '3', name: 'نور الدين', level: 'المستوى الثاني', lastUpdate: 'منذ يومين' },
-    { id: '4', name: 'سارة أحمد', level: 'المستوى الثالث', lastUpdate: 'منذ 3 أيام' },
-    { id: '5', name: 'يوسف محمد', level: 'المستوى الأول', lastUpdate: 'منذ 5 أيام' },
-];
-
-// Mock Records Initial Data
-const initialRecords: FollowUpRecord[] = [
-    {
-        id: '1',
-        date: '2024-01-27',
-        day: 'السبت',
-        hifz: { surah: 'الملك', from: '1', to: '15', grade: 'ممتاز' },
-        revision: { surah: 'البقرة', from: '1', to: '10', grade: 'جيد جداً' },
-        notes: 'انتبه للغنة'
-    },
-    {
-        id: '2',
-        date: '2024-01-24',
-        day: 'الأربعاء',
-        hifz: { surah: 'القلم', from: '1', to: '20', grade: 'جيد' },
-        revision: { surah: 'البقرة', from: '11', to: '20', grade: 'ممتاز' },
-        notes: ''
-    }
-];
-
 const emptyRecordData = {
     date: new Date().toISOString().split('T')[0],
     hifzSurah: '',
@@ -69,22 +43,44 @@ const emptyRecordData = {
 };
 
 const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _onNavigate }) => {
+    // 1. Fetch Students
+    const { students: firebaseStudents, isLoading: studentsLoading } = useStudents();
+
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [records, setRecords] = useState<FollowUpRecord[]>(initialRecords);
+
+    // 2. Fetch Records for Selected Student
+    // Hooks must be called unconditionally. We pass null if no student selected.
+    const {
+        records,
+        isLoading: recordsLoading,
+        addRecord,
+        updateRecord,
+        deleteRecord
+    } = useFollowUpRecords(selectedStudent?.id || null);
 
     // Modal State
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
     const [formData, setFormData] = useState(emptyRecordData);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const filteredStudents = students.filter(student =>
-        student.name.includes(searchQuery)
-    );
+    // Filter & Map Students
+    const filteredStudents = useMemo(() => {
+        const mapped = firebaseStudents.map(s => ({
+            id: s.id,
+            name: s.name,
+            level: s.level || 'غير محدد',
+            lastUpdate: s.updated_at ? new Date(s.updated_at).toLocaleDateString('ar-EG') : 'جديد'
+        }));
+
+        return mapped.filter(student =>
+            student.name.includes(searchQuery)
+        );
+    }, [firebaseStudents, searchQuery]);
 
     const handleStudentClick = (student: Student) => {
         setSelectedStudent(student);
-        // In real app, fetch records for this student here
     };
 
     const handleBack = () => {
@@ -116,45 +112,59 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
         setShowAddModal(true);
     };
 
-    const handleDeleteRecord = (id: string) => {
+    const handleDeleteRecord = async (id: string) => {
         if (window.confirm('هل أنت متأكد من حذف هذا السجل؟')) {
-            setRecords(prev => prev.filter(r => r.id !== id));
+            await deleteRecord(id);
         }
     };
 
-    const handleSaveRecord = (e: React.FormEvent) => {
+    const handleSaveRecord = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
-        const dateObj = new Date(formData.date);
-        const dayName = dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
+        try {
+            const dateObj = new Date(formData.date);
+            const dayName = dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
 
-        const newRecord: FollowUpRecord = {
-            id: editingRecordId || Date.now().toString(),
-            date: formData.date,
-            day: dayName,
-            hifz: {
-                surah: formData.hifzSurah,
-                from: formData.hifzFrom,
-                to: formData.hifzTo,
-                grade: formData.hifzGrade
-            },
-            revision: {
-                surah: formData.revSurah,
-                from: formData.revFrom,
-                to: formData.revTo,
-                grade: formData.revGrade
-            },
-            notes: formData.notes
-        };
+            const recordData = {
+                date: formData.date,
+                day: dayName,
+                hifz: {
+                    surah: formData.hifzSurah,
+                    from: formData.hifzFrom,
+                    to: formData.hifzTo,
+                    grade: formData.hifzGrade
+                },
+                revision: {
+                    surah: formData.revSurah,
+                    from: formData.revFrom,
+                    to: formData.revTo,
+                    grade: formData.revGrade
+                },
+                notes: formData.notes
+            };
 
-        if (editingRecordId) {
-            setRecords(prev => prev.map(r => r.id === editingRecordId ? newRecord : r));
-        } else {
-            setRecords(prev => [newRecord, ...prev]);
+            if (editingRecordId) {
+                await updateRecord(editingRecordId, recordData);
+            } else {
+                await addRecord(recordData);
+            }
+
+            setShowAddModal(false);
+        } catch (error) {
+            console.error("Failed to save record", error);
+        } finally {
+            setIsSubmitting(false);
         }
-
-        setShowAddModal(false);
     };
+
+    if (studentsLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Loader className="animate-spin text-primary-600" size={32} />
+            </div>
+        );
+    }
 
     return (
         <div className="teacher-homework-page animate-fadeIn">
@@ -184,23 +194,29 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
                     </div>
 
                     <div className="students-grid">
-                        {filteredStudents.map(student => (
-                            <div
-                                key={student.id}
-                                className="student-card"
-                                onClick={() => handleStudentClick(student)}
-                            >
-                                <div className="student-avatar">
-                                    <User size={24} />
+                        {filteredStudents.length > 0 ? (
+                            filteredStudents.map(student => (
+                                <div
+                                    key={student.id}
+                                    className="student-card"
+                                    onClick={() => handleStudentClick(student)}
+                                >
+                                    <div className="student-avatar">
+                                        <User size={24} />
+                                    </div>
+                                    <div className="student-info">
+                                        <h3>{student.name}</h3>
+                                        <span className="student-level">{student.level}</span>
+                                        <span className="last-update">آخر تحديث: {student.lastUpdate}</span>
+                                    </div>
+                                    <ChevronLeft size={20} className="arrow-icon" />
                                 </div>
-                                <div className="student-info">
-                                    <h3>{student.name}</h3>
-                                    <span className="student-level">{student.level}</span>
-                                    <span className="last-update">آخر تحديث: {student.lastUpdate}</span>
-                                </div>
-                                <ChevronLeft size={20} className="arrow-icon" />
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-10 text-gray-500">
+                                لا يوجد طلاب يطابقون بحثك
                             </div>
-                        ))}
+                        )}
                     </div>
                 </>
             ) : (
@@ -224,12 +240,18 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
                         </button>
                     </header>
 
-                    <FollowUpTable
-                        records={records}
-                        isTeacher={true}
-                        onEdit={handleEditRecord}
-                        onDelete={handleDeleteRecord}
-                    />
+                    {recordsLoading ? (
+                        <div className="flex justify-center p-10">
+                            <Loader className="animate-spin text-primary-600" size={32} />
+                        </div>
+                    ) : (
+                        <FollowUpTable
+                            records={records}
+                            isTeacher={true}
+                            onEdit={handleEditRecord}
+                            onDelete={handleDeleteRecord}
+                        />
+                    )}
                 </div>
             )}
 
@@ -362,9 +384,23 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
                                 />
                             </div>
 
-                            <button type="submit" className="upload-btn primary" style={{ width: '100%', marginTop: '1rem' }}>
-                                <Save size={18} />
-                                حفظ السجل
+                            <button
+                                type="submit"
+                                className="upload-btn primary"
+                                style={{ width: '100%', marginTop: '1rem' }}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <Loader className="animate-spin" size={18} />
+                                        جاري الحفظ...
+                                    </span>
+                                ) : (
+                                    <>
+                                        <Save size={18} />
+                                        حفظ السجل
+                                    </>
+                                )}
                             </button>
                         </form>
                     </div>

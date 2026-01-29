@@ -163,7 +163,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                         <Users size={28} />
                         إدارة الطالبات
                     </h1>
-                    <p>إجمالي {stats.total} طالبة</p>
+                    <p>إجمالي {stats.total} طالب</p>
                 </div>
             </div>
 
@@ -193,7 +193,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                     <Search size={20} />
                     <input
                         type="text"
-                        placeholder="ابحث عن طالبة..."
+                        placeholder="ابحث عن طالب..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -365,7 +365,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                     </select>
                                 </div>
                                 <div className="form-group col-span-2">
-                                    <label>ملاحظات المعلمة (ستظهر للطالبة)</label>
+                                    <label>ملاحظات المعلمة (ستظهر للطالب)</label>
                                     <div className="flex gap-2">
                                         <textarea
                                             className="form-input w-full p-2 border rounded"

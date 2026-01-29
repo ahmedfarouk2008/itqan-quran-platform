@@ -496,7 +496,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
 
                     <div className="sessions-table">
                         <div className="table-header">
-                            <span>الطالبة</span>
+                            <span>الطالب</span>
                             <span>التاريخ</span>
                             <span>الوقت</span>
                             <span>الحالة</span>
@@ -599,14 +599,14 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                             <div className="form-group">
                                 <label>
                                     <User size={18} />
-                                    الطالبة
+                                    الطالب
                                 </label>
                                 <select
                                     value={newSessionData.studentId}
                                     onChange={(e) => setNewSessionData({ ...newSessionData, studentId: e.target.value })}
                                     required
                                 >
-                                    <option value="">اختر الطالبة</option>
+                                    <option value="">اختر الطالب</option>
                                     {students.map(student => (
                                         <option key={student.id} value={student.id}>{student.name}</option>
                                     ))}

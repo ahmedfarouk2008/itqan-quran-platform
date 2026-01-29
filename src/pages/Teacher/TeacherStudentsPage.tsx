@@ -12,8 +12,10 @@ import {
     Clock,
     Award,
     Eye,
+    Save, // Import Save icon
 } from 'lucide-react';
-import { useStudents } from '../../hooks';
+import { useStudents, useSessions } from '../../hooks'; // Import useSessions
+import { UserLevel } from '../../types'; // Import UserLevel enum
 import '../../styles/pages/teacher-students.css';
 
 // ==============================================
@@ -45,31 +47,47 @@ interface Student {
 // ... (imports remain the same)
 
 const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate }) => {
-    const { students: firebaseStudents, isLoading, updateStudent } = useStudents();
+    const { students: firebaseStudents, isLoading: studentsLoading, updateStudent } = useStudents();
+    const { sessions, isLoading: sessionsLoading } = useSessions(); // Fetch sessions
+    const isLoading = studentsLoading || sessionsLoading;
+
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive' | 'new'>('all');
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
     // Map Firebase profiles to local Student interface
     const students: Student[] = useMemo(() => {
-        return firebaseStudents.map(p => ({
-            id: p.id,
-            name: p.name,
-            avatar: p.avatar_url,
-            level: p.level || 'مبتدئ',
-            progress: Math.round(((p.memorized_ayahs || 0) / (p.total_surahs ? p.total_surahs * 20 : 6000)) * 100) || 0, // Approx calculation
-            lastSession: 'غير محدد',
-            nextSession: null,
-            totalSessions: 0,
-            memorizedSurahs: p.memorized_ayahs ? Math.floor(p.memorized_ayahs / 20) : 0, // Approx
-            rating: p.rating || 0,
-            status: p.status || 'active',
-            trend: 'stable' as const,
-            joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
-            currentSurah: p.current_surah || 'لم يبدأ',
-            teacherNotes: p.teacher_notes || []
-        }));
-    }, [firebaseStudents]);
+        return firebaseStudents.map(p => {
+            // Calculate session stats dynamically
+            const studentSessions = sessions.filter(s => s.student_id === p.id && s.status === 'مكتملة');
+            const totalSessions = studentSessions.length;
+
+            // Find last session date
+            const lastSessionDate = studentSessions.length > 0
+                ? studentSessions.reduce((latest, current) =>
+                    new Date(current.scheduled_at) > new Date(latest.scheduled_at) ? current : latest
+                ).scheduled_at
+                : null;
+
+            return {
+                id: p.id,
+                name: p.name,
+                avatar: p.avatar_url,
+                level: p.level || UserLevel.BEGINNER, // Use UserLevel enum or default
+                progress: Math.round(((p.memorized_ayahs || 0) / (p.total_surahs ? p.total_surahs * 20 : 6000)) * 100) || 0,
+                lastSession: lastSessionDate ? new Date(lastSessionDate).toLocaleDateString('ar-EG') : 'غير محدد',
+                nextSession: null, // Could also calculate next session from 'upcomingSessions' if needed
+                totalSessions: totalSessions,
+                memorizedSurahs: p.memorized_ayahs ? Math.floor(p.memorized_ayahs / 20) : 0,
+                rating: p.rating || 0,
+                status: p.status || 'active',
+                trend: 'stable' as const,
+                joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
+                currentSurah: p.current_surah || 'لم يبدأ',
+                teacherNotes: p.teacher_notes || []
+            };
+        });
+    }, [firebaseStudents, sessions]);
 
     const selectedStudent = useMemo(() =>
         students.find(s => s.id === selectedStudentId) || null,
@@ -117,6 +135,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
         currentSurah: string;
         memorizedAyahs: number;
         status: 'active' | 'inactive' | 'new';
+        level: string; // Add level to form state
         newNote: string;
     } | null>(null);
 
@@ -125,8 +144,9 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
         if (selectedStudent) {
             setEditForm({
                 currentSurah: selectedStudent.currentSurah,
-                memorizedAyahs: selectedStudent.memorizedSurahs * 20, // Approx
+                memorizedAyahs: selectedStudent.memorizedSurahs * 20,
                 status: selectedStudent.status,
+                level: selectedStudent.level, // Init level
                 newNote: ''
             });
         }
@@ -139,6 +159,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
         if (editForm.currentSurah !== selectedStudent.currentSurah) updates.current_surah = editForm.currentSurah;
         if (editForm.memorizedAyahs !== selectedStudent.memorizedSurahs * 20) updates.memorized_ayahs = editForm.memorizedAyahs;
         if (editForm.status !== selectedStudent.status) updates.status = editForm.status;
+        if (editForm.level !== selectedStudent.level) updates.level = editForm.level; // Add level update
 
         if (Object.keys(updates).length > 0) {
             await updateStudent(selectedStudent.id, updates);
@@ -364,6 +385,18 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                         <option value="new">جديد</option>
                                     </select>
                                 </div>
+                                <div className="form-group">
+                                    <label>المستوى</label>
+                                    <select
+                                        className="form-input w-full p-2 border rounded"
+                                        value={editForm.level}
+                                        onChange={(e) => setEditForm({ ...editForm, level: e.target.value })}
+                                    >
+                                        <option value={UserLevel.BEGINNER}>{UserLevel.BEGINNER}</option>
+                                        <option value={UserLevel.INTERMEDIATE}>{UserLevel.INTERMEDIATE}</option>
+                                        <option value={UserLevel.ADVANCED}>{UserLevel.ADVANCED}</option>
+                                    </select>
+                                </div>
                                 <div className="form-group col-span-2">
                                     <label>ملاحظات المعلمة (ستظهر للطالب)</label>
                                     <div className="flex gap-2">
@@ -396,9 +429,11 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                             </div>
                             <div className="mt-4 flex justify-end">
                                 <button
-                                    className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
+                                    className="action-btn primary" // Use standard class
                                     onClick={handleSave}
+                                    style={{ padding: '8px 24px' }}
                                 >
+                                    <Save size={18} />
                                     حفظ التغييرات
                                 </button>
                             </div>

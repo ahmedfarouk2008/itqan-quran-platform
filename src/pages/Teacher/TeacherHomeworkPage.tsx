@@ -25,6 +25,7 @@ interface TeacherHomeworkPageProps {
 interface Student {
     id: string;
     name: string;
+    avatar: string | null;
     level: string;
     lastUpdate: string;
 }
@@ -70,6 +71,7 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
         const mapped = firebaseStudents.map(s => ({
             id: s.id,
             name: s.name,
+            avatar: s.avatar_url,
             level: s.level || 'غير محدد',
             lastUpdate: s.updated_at ? new Date(s.updated_at).toLocaleDateString('ar-EG') : 'جديد'
         }));
@@ -202,7 +204,15 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
                                     onClick={() => handleStudentClick(student)}
                                 >
                                     <div className="student-avatar">
-                                        <User size={24} />
+                                        {student.avatar ? (
+                                            <img
+                                                src={student.avatar}
+                                                alt={student.name}
+                                                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                            />
+                                        ) : (
+                                            <User size={24} />
+                                        )}
                                     </div>
                                     <div className="student-info">
                                         <h3>{student.name}</h3>

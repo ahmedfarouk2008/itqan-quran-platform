@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { User, HomeworkStatus } from '../../types';
 import { useSessions, useHomework, useTeachers } from '../../hooks';
+import { useFollowUpRecords } from '../../hooks/useFollowUpRecords';
 import '../../styles/pages/student-dashboard.css';
 
 // ==============================================
@@ -27,7 +28,18 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
     const { pendingHomework, isLoading: homeworkLoading } = useHomework();
     const { teachers, isLoading: teachersLoading } = useTeachers();
 
-    const isLoading = sessionsLoading || homeworkLoading || teachersLoading;
+    // Fetch follow-up records for the current student
+    const { records: followUpRecords, isLoading: recordsLoading } = useFollowUpRecords(user.id);
+
+    const isLoading = sessionsLoading || homeworkLoading || teachersLoading || recordsLoading;
+
+    // Get latest teacher note
+    const latestNote = useMemo(() => {
+        if (!followUpRecords || followUpRecords.length === 0) return null;
+        // Find first record with notes
+        const recordWithNote = followUpRecords.find(r => r.notes && r.notes.trim().length > 0);
+        return recordWithNote ? { text: recordWithNote.notes, date: recordWithNote.date } : null;
+    }, [followUpRecords]);
 
     // Get next session
     const nextSession = useMemo(() => {
@@ -265,12 +277,18 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                     </div>
 
                     <div className="card-content">
-                        <div className="teacher-note">
-                            <p className="note-text">
-                                "أحسنت يا أحمد! تحسّن ملحوظ في مخارج الحروف. ركّز على الغنة في 'إنّ' و'أنّ'."
-                            </p>
-                            <span className="note-date">منذ يومين</span>
-                        </div>
+                        {latestNote ? (
+                            <div className="teacher-note">
+                                <p className="note-text cancel-quote">
+                                    "{latestNote.text}"
+                                </p>
+                                <span className="note-date">{latestNote.date}</span>
+                            </div>
+                        ) : (
+                            <div className="card-empty">
+                                <p>لا توجد ملاحظات جديدة</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

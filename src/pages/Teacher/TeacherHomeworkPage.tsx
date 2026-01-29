@@ -397,19 +397,19 @@ const TeacherHomeworkPage: React.FC<TeacherHomeworkPageProps> = ({ onNavigate: _
                             <button
                                 type="submit"
                                 className="upload-btn primary"
-                                style={{ width: '100%', marginTop: '1rem' }}
+                                style={{ width: '100%', marginTop: '2rem', padding: '14px', fontSize: '1.1rem', fontWeight: 'bold' }}
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (
                                     <span className="flex items-center justify-center gap-2">
-                                        <Loader className="animate-spin" size={18} />
+                                        <Loader className="animate-spin" size={20} />
                                         جاري الحفظ...
                                     </span>
                                 ) : (
-                                    <>
-                                        <Save size={18} />
+                                    <span className="flex items-center justify-center gap-2">
+                                        <Save size={20} />
                                         حفظ السجل
-                                    </>
+                                    </span>
                                 )}
                             </button>
                         </form>

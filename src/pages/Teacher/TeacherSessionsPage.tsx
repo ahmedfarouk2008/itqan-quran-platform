@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Calendar,
     Clock,
@@ -13,7 +13,8 @@ import {
     Trash2,
     Link,
 } from 'lucide-react';
-import { useSessions, useStudents } from '../../hooks';
+import { useSessions, useStudents, useTeachers } from '../../hooks';
+import { useAuth } from '../../contexts/AuthContext';
 import '../../styles/pages/teacher-sessions.css';
 
 // ==============================================
@@ -43,6 +44,8 @@ const weekDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأر�
 const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _onNavigate }) => {
     const { sessions: firebaseSessions, updateSession, createSession, deleteSession } = useSessions();
     const { students } = useStudents();
+    const { getTeacherSlots, saveTeacherSlots } = useTeachers();
+    const { profile } = useAuth();
     const [activeTab, setActiveTab] = useState<'calendar' | 'list' | 'slots'>('calendar');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showAddModal, setShowAddModal] = useState(false);
@@ -71,7 +74,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
         }
 
         setIsSubmitting(true);
-        const scheduledAt = `${newSessionData.date}T${newSessionData.time}:00`;
+        const scheduledAt = new Date(`${newSessionData.date}T${newSessionData.time}`).toISOString();
 
         if (editingSessionId) {
             const { error } = await updateSession(editingSessionId, {
@@ -158,7 +161,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                 id: s.id,
                 studentName: student ? student.name : 'Unknown Student',
                 studentAvatar: student?.avatar_url || null,
-                date: s.scheduled_at.split('T')[0],
+                date: new Date(s.scheduled_at).toLocaleDateString('en-CA'),
                 time: new Date(s.scheduled_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
                 duration: s.duration,
                 type: s.type as Session['type'],
@@ -210,14 +213,21 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
     };
 
     // Slots persistence
-    const [selectedSlots, setSelectedSlots] = useState<string[]>(() => {
-        const saved = localStorage.getItem('teacher_available_slots');
-        return saved ? JSON.parse(saved) : [
-            'الأحد-10:00', 'الأحد-11:00',
-            'الإثنين-09:00',
-            'الثلاثاء-14:00', 'الثلاثاء-15:00'
-        ];
-    });
+    const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+    const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+    // Fetch initial slots
+    useEffect(() => {
+        if (activeTab === 'slots' && profile?.id) {
+            setIsLoadingSlots(true);
+            getTeacherSlots(profile.id).then(slots => {
+                const dayMapReversed = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                const formattedSlots = slots.map(s => `${dayMapReversed[s.day_of_week]}-${s.start_time}`);
+                setSelectedSlots(formattedSlots);
+                setIsLoadingSlots(false);
+            });
+        }
+    }, [activeTab, profile?.id, getTeacherSlots]);
 
     const toggleSlot = (slotId: string) => {
         const newSlots = selectedSlots.includes(slotId)
@@ -225,7 +235,24 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
             : [...selectedSlots, slotId];
 
         setSelectedSlots(newSlots);
-        localStorage.setItem('teacher_available_slots', JSON.stringify(newSlots));
+        // No local storage save here, wait for manual save
+    };
+
+    const handleSaveSlots = async () => {
+        if (!profile?.id) return;
+
+        // Convert selectedSlots strings back to objects
+        const slotsToSave = selectedSlots.map(s => {
+            const [day, time] = s.split('-');
+            return { day, time };
+        });
+
+        const { error } = await saveTeacherSlots(profile.id, slotsToSave);
+        if (error) {
+            alert('حدث خطأ أثناء حفظ الأوقات');
+        } else {
+            alert('تم حفظ الأوقات المتاحة بنجاح');
+        }
     };
 
     const formatDate = (date: Date) => {
@@ -255,7 +282,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
 
 
     const todaySessions = sessions.filter(
-        (s) => s.date === selectedDate.toISOString().split('T')[0]
+        (s) => s.date === selectedDate.toLocaleDateString('en-CA')
     );
 
     const filteredSessions = sessions.filter(
@@ -289,10 +316,10 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
         // Days of month
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, month, day);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = date.toLocaleDateString('en-CA');
             const daySessions = sessions.filter((s) => s.date === dateStr);
-            const isToday = dateStr === new Date().toISOString().split('T')[0];
-            const isSelected = dateStr === selectedDate.toISOString().split('T')[0];
+            const isToday = dateStr === new Date().toLocaleDateString('en-CA');
+            const isSelected = dateStr === selectedDate.toLocaleDateString('en-CA');
 
             days.push(
                 <div
@@ -576,9 +603,9 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                     </div>
 
                     <div className="slots-footer">
-                        <button className="save-btn" onClick={() => alert('تم حفظ الأوقات المتاحة')}>
+                        <button className="save-btn" onClick={handleSaveSlots}>
                             <Check size={18} />
-                            حفظ التغييرات
+                            {isLoadingSlots ? 'جاري التحميل...' : 'حفظ التغييرات'}
                         </button>
                     </div>
                 </div>

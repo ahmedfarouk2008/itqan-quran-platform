@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db, Profile, TeacherSlot } from '../lib/firebase';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, writeBatch, doc } from 'firebase/firestore';
 
 // ==============================================
 // Teachers Hook - إدارة المعلمات
@@ -11,6 +11,7 @@ interface UseTeachersReturn {
     isLoading: boolean;
     error: Error | null;
     getTeacherSlots: (teacherId: string) => Promise<TeacherSlot[]>;
+    saveTeacherSlots: (teacherId: string, slots: { day: string; time: string }[]) => Promise<{ error: Error | null }>;
     refresh: () => Promise<void>;
 }
 
@@ -73,11 +74,63 @@ export const useTeachers = (): UseTeachersReturn => {
         }
     };
 
+    const saveTeacherSlots = async (teacherId: string, slots: { day: string; time: string }[]): Promise<{ error: Error | null }> => {
+        try {
+            // 1. Get existing slots to delete (simple replace strategy for now)
+            // Ideally we would diff, but for < 100 docs this is simpler
+            const q = query(collection(db, 'teacher_slots'), where('teacher_id', '==', teacherId));
+            const snapshot = await getDocs(q);
+
+            const batch = writeBatch(db);
+
+            // Delete all existing
+            snapshot.docs.forEach((d) => {
+                batch.delete(d.ref);
+            });
+
+            // Add new slots
+            slots.forEach((slot) => {
+                const newDocRef = doc(collection(db, 'teacher_slots'));
+                const dayMap: { [key: string]: number } = {
+                    'الأحد': 0, 'الإثنين': 1, 'الثلاثاء': 2, 'الأربعاء': 3,
+                    'الخميس': 4, 'الجمعة': 5, 'السبت': 6
+                };
+
+                const newSlot: TeacherSlot = {
+                    id: newDocRef.id,
+                    created_at: new Date().toISOString(),
+                    teacher_id: teacherId,
+                    day_of_week: dayMap[slot.day] ?? 0,
+                    start_time: slot.time,
+                    end_time: calculateEndTime(slot.time), // Helper needed
+                    is_recurring: true,
+                    is_available: true
+                };
+                batch.set(newDocRef, newSlot);
+            });
+
+            await batch.commit();
+            return { error: null };
+        } catch (err) {
+            console.error('Error saving slots:', err);
+            return { error: err as Error };
+        }
+    };
+
+    // Helper to calculate end time (assuming 1 hour slots for availability grid)
+    const calculateEndTime = (startTime: string): string => {
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours + 1, minutes);
+        return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    };
+
     return {
         teachers,
         isLoading,
         error,
         getTeacherSlots,
+        saveTeacherSlots,
         refresh: fetchTeachers,
     };
 };

@@ -173,6 +173,9 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
             await updateStudent(selectedStudent.id, { teacher_notes: updatedNotes });
             setEditForm(prev => prev ? ({ ...prev, newNote: '' }) : null);
         }
+
+        // Close modal after save
+        setSelectedStudentId(null);
     };
 
     return (
@@ -429,11 +432,10 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                             </div>
                             <div className="mt-4 flex justify-end">
                                 <button
-                                    className="action-btn primary" // Use standard class
+                                    className="action-btn primary w-full text-center justify-center py-3 text-lg font-bold"
                                     onClick={handleSave}
-                                    style={{ padding: '8px 24px' }}
                                 >
-                                    <Save size={18} />
+                                    <Save size={20} />
                                     حفظ التغييرات
                                 </button>
                             </div>

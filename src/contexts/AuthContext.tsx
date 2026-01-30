@@ -138,11 +138,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 bio: null,
                 specialty: null,
                 rating: null,
-                status: 'new',
+                status: 'active',
                 current_surah: null,
-                memorized_ayahs: 0,
-                teacher_notes: [],
-                total_surahs: 0
+                current_ayah: null,
+                memorized_ayahs: null,
+                teacher_notes: null,
+                total_surahs: null
             };
 
             await setDoc(doc(db, 'users', user.uid), newProfile);

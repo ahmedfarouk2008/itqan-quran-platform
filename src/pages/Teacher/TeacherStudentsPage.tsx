@@ -431,7 +431,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                 </div>
                             </div>
                             <div className="mt-4 flex justify-end">
-                                <button
+                                <button style={{ color: '#333', fontSize: '20px' }}
                                     className="action-btn primary w-full text-center justify-center py-3 text-lg font-bold"
                                     onClick={handleSave}
                                 >

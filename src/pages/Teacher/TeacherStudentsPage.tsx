@@ -310,7 +310,12 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                     <div className="detail-stat">
                                         <Calendar size={20} />
                                         <div>
-                                            <span className="value">{selectedStudent.totalSessions}</span>
+                                            <span className="value">
+                                                {sessions.filter(s =>
+                                                    s.student_id === selectedStudent.id &&
+                                                    (s.status === 'مكتملة' || (s.status === 'مؤكدة' && new Date(s.scheduled_at) < new Date()))
+                                                ).length}
+                                            </span>
                                             <span className="label">جلسة مكتملة</span>
                                         </div>
                                     </div>

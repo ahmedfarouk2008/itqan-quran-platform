@@ -243,63 +243,55 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                         onClick={() => setSelectedStudentId(student.id)}
                         style={{ cursor: 'pointer' }}
                     >
-                        <div className="card-header">
-                            <div className="student-avatar">
+                        {/* Status Badge - Absolute Positioned */}
+                        <div className="card-status-badge">
+                            {getStatusBadge(student.status)}
+                        </div>
+
+                        <div className="card-header centered">
+                            <div className="student-avatar large">
                                 {student.avatar ? (
                                     <img src={student.avatar} alt={student.name} />
                                 ) : (
                                     student.name.charAt(0)
                                 )}
                             </div>
-                            <div className="student-info">
+                            <div className="student-info centered">
                                 <h3>{student.name}</h3>
                                 <span className="level-badge">{student.level}</span>
                             </div>
-                            {getStatusBadge(student.status)}
-                            <button className="more-btn" onClick={(e) => e.stopPropagation()}>
-                                <MoreVertical size={18} />
-                            </button>
                         </div>
 
-                        <div className="progress-section">
-                            <div className="progress-header">
-                                <span>التقدم العام</span>
-                                <span className="progress-value">
-                                    {student.progress}%
-                                    {getTrendIcon(student.trend)}
-                                </span>
-                            </div>
-                            <div className="progress-bar">
-                                <div className="progress-fill" style={{ width: `${student.progress}%` }} />
-                            </div>
-                        </div>
+                        {/* Progress Section Removed as requested */}
 
-                        <div className="student-stats">
+                        <div className="student-stats centered-grid">
                             <div className="stat">
-                                <Calendar size={16} />
+                                <Calendar size={18} />
                                 <span>{student.totalSessions} جلسة</span>
                             </div>
                             <div className="stat">
-                                <BookOpen size={16} />
+                                <BookOpen size={18} />
                                 <span>{student.memorizedSurahs} سورة</span>
                             </div>
                         </div>
 
-                        <div className="session-info">
-                            <div className="last-session">
-                                <Clock size={14} />
-                                <span>آخر جلسة: {student.lastSession}</span>
-                            </div>
-                            {student.nextSession && (
-                                <div className="next-session">
+                        <div className="session-info centered">
+                            {student.nextSession ? (
+                                <div className="next-session highlight">
+                                    <Clock size={16} />
                                     <span>القادمة: {student.nextSession}</span>
+                                </div>
+                            ) : (
+                                <div className="last-session dimmed">
+                                    <Clock size={16} />
+                                    <span>آخر جلسة: {student.lastSession}</span>
                                 </div>
                             )}
                         </div>
 
                         <div className="card-actions">
-                            <button className="action-btn primary">
-                                <Eye size={16} />
+                            <button className="action-btn primary full-width">
+                                <Eye size={18} />
                                 عرض التفاصيل
                             </button>
                         </div>

@@ -215,6 +215,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
     // Slots persistence
     const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Fetch initial slots
     useEffect(() => {
@@ -224,6 +225,10 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                 const dayMapReversed = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
                 const formattedSlots = slots.map(s => `${dayMapReversed[s.day_of_week]}-${s.start_time}`);
                 setSelectedSlots(formattedSlots);
+            }).catch(err => {
+                console.error("Error fetching slots:", err);
+                alert("حدث خطأ أثناء تحميل الأوقات المتاحة");
+            }).finally(() => {
                 setIsLoadingSlots(false);
             });
         }
@@ -241,6 +246,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
     const handleSaveSlots = async () => {
         if (!profile?.id) return;
 
+        setIsSaving(true);
         // Convert selectedSlots strings back to objects
         const slotsToSave = selectedSlots.map(s => {
             const [day, time] = s.split('-');
@@ -248,6 +254,8 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
         });
 
         const { error } = await saveTeacherSlots(profile.id, slotsToSave);
+        setIsSaving(false);
+
         if (error) {
             alert('حدث خطأ أثناء حفظ الأوقات');
         } else {
@@ -603,9 +611,14 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                     </div>
 
                     <div className="slots-footer">
-                        <button className="save-btn" onClick={handleSaveSlots}>
+                        <button
+                            className="save-btn"
+                            onClick={handleSaveSlots}
+                            disabled={isLoadingSlots || isSaving}
+                            style={{ opacity: (isLoadingSlots || isSaving) ? 0.7 : 1 }}
+                        >
                             <Check size={18} />
-                            {isLoadingSlots ? 'جاري التحميل...' : 'حفظ التغييرات'}
+                            {isSaving ? 'جاري الحفظ...' : (isLoadingSlots ? 'جاري التحميل...' : 'حفظ التغييرات')}
                         </button>
                     </div>
                 </div>

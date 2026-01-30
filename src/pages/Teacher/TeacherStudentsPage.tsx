@@ -11,7 +11,7 @@ import {
     Save, // Import Save icon
 } from 'lucide-react';
 import { useStudents, useSessions } from '../../hooks'; // Import useSessions
-import { UserLevel } from '../../types'; // Import UserLevel enum
+// UserLevel import removed
 import '../../styles/pages/teacher-students.css';
 
 // ==============================================
@@ -26,19 +26,16 @@ interface Student {
     id: string;
     name: string;
     avatar: string | null;
-    level: string;
-    progress: number;
+    juz: number;
     lastSession: string;
     nextSession: string | null;
     totalSessions: number;
-    memorizedSurahs: number;
     rating: number;
     status: 'active' | 'inactive' | 'new';
     trend: 'up' | 'down' | 'stable';
     joinedAt: string;
     currentSurah: string;
     currentAyah: number;
-    rawMemorizedAyahs: number;
     teacherNotes: Array<{ type: 'warning' | 'success'; text: string; date: string }>;
 }
 
@@ -74,20 +71,16 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                 id: p.id,
                 name: p.name,
                 avatar: p.avatar_url,
-                level: p.level || UserLevel.BEGINNER, // Use UserLevel enum or default
-                progress: Math.round(((p.memorized_ayahs || 0) / (p.total_surahs ? p.total_surahs * 20 : 6000)) * 100) || 0,
+                juz: p.memorized_ayahs || 1, // Using memorized_ayahs to store Juz number
                 lastSession: lastSessionDate ? new Date(lastSessionDate).toLocaleDateString('ar-EG') : 'غير محدد',
                 nextSession: null, // Could also calculate next session from 'upcomingSessions' if needed
                 totalSessions: totalSessions,
-                memorizedSurahs: p.memorized_ayahs ? Math.floor(p.memorized_ayahs / 20) : 0,
                 rating: p.rating || 0,
                 status: p.status || 'active',
                 trend: 'stable' as const,
                 joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
                 currentSurah: p.current_surah || 'لم يبدأ',
                 currentAyah: p.current_ayah || 1,
-                // Store raw value for editing to avoid precision loss from division/multiplication
-                rawMemorizedAyahs: p.memorized_ayahs || 0,
                 teacherNotes: p.teacher_notes || []
             };
         });
@@ -129,9 +122,8 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
     const [editForm, setEditForm] = useState<{
         currentSurah: string;
         currentAyah: number;
-        memorizedAyahs: number;
+        juz: number;
         status: 'active' | 'inactive' | 'new';
-        level: string; // Add level to form state
         newNote: string;
     } | null>(null);
 
@@ -141,9 +133,8 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
             setEditForm({
                 currentSurah: selectedStudent.currentSurah,
                 currentAyah: selectedStudent.currentAyah,
-                memorizedAyahs: selectedStudent.rawMemorizedAyahs,
+                juz: selectedStudent.juz,
                 status: selectedStudent.status,
-                level: selectedStudent.level, // Init level
                 newNote: ''
             });
         }
@@ -155,9 +146,8 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
         const updates: any = {};
         if (editForm.currentSurah !== selectedStudent.currentSurah) updates.current_surah = editForm.currentSurah;
         if (editForm.currentAyah !== selectedStudent.currentAyah) updates.current_ayah = editForm.currentAyah;
-        if (editForm.memorizedAyahs !== selectedStudent.memorizedSurahs * 20) updates.memorized_ayahs = editForm.memorizedAyahs;
+        if (editForm.juz !== selectedStudent.juz) updates.memorized_ayahs = editForm.juz;
         if (editForm.status !== selectedStudent.status) updates.status = editForm.status;
-        if (editForm.level !== selectedStudent.level) updates.level = editForm.level; // Add level update
 
         if (Object.keys(updates).length > 0) {
             await updateStudent(selectedStudent.id, updates);
@@ -256,7 +246,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                             </div>
                             <div className="student-info centered">
                                 <h3>{student.name}</h3>
-                                <span className="level-badge">{student.level}</span>
+                                {/* Level badge removed */}
                             </div>
                         </div>
 
@@ -269,7 +259,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                             </div>
                             <div className="stat">
                                 <BookOpen size={18} />
-                                <span>{student.memorizedSurahs} سورة</span>
+                                <span>الجزء {student.juz}</span>
                             </div>
                         </div>
 
@@ -305,7 +295,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                             {/* Header content */}
                             <div className="student-info">
                                 <h2>{selectedStudent.name}</h2>
-                                <span className="level-badge">{selectedStudent.level}</span>
+                                {/* Level badge removed */}
                                 {getStatusBadge(editForm.status)}
                             </div>
                             <button className="close-btn" onClick={() => setSelectedStudentId(null)}>
@@ -332,8 +322,8 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                     <div className="detail-stat">
                                         <BookOpen size={20} />
                                         <div>
-                                            <span className="value">{selectedStudent.memorizedSurahs}</span>
-                                            <span className="label">سورة محفوظة</span>
+                                            <span className="value">{selectedStudent.juz}</span>
+                                            <span className="label">الجزء الحالي</span>
                                         </div>
                                     </div>
 
@@ -366,13 +356,16 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>عدد الآيات المحفوظة</label>
-                                    <input
-                                        type="number"
+                                    <label>الجزء رقم</label>
+                                    <select
                                         className="form-input w-full p-2 border rounded"
-                                        value={editForm.memorizedAyahs}
-                                        onChange={(e) => setEditForm({ ...editForm, memorizedAyahs: parseInt(e.target.value) || 0 })}
-                                    />
+                                        value={editForm.juz}
+                                        onChange={(e) => setEditForm({ ...editForm, juz: parseInt(e.target.value) })}
+                                    >
+                                        {Array.from({ length: 30 }, (_, i) => i + 1).map(num => (
+                                            <option key={num} value={num}>{num}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="form-group">
                                     <label>الحالة</label>
@@ -386,18 +379,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                         <option value="new">جديد</option>
                                     </select>
                                 </div>
-                                <div className="form-group">
-                                    <label>المستوى</label>
-                                    <select
-                                        className="form-input w-full p-2 border rounded"
-                                        value={editForm.level}
-                                        onChange={(e) => setEditForm({ ...editForm, level: e.target.value })}
-                                    >
-                                        <option value={UserLevel.BEGINNER}>{UserLevel.BEGINNER}</option>
-                                        <option value={UserLevel.INTERMEDIATE}>{UserLevel.INTERMEDIATE}</option>
-                                        <option value={UserLevel.ADVANCED}>{UserLevel.ADVANCED}</option>
-                                    </select>
-                                </div>
+                                {/* Level select removed */}
                                 <div className="form-group col-span-2">
                                     <label>ملاحظات المعلمة (ستظهر للطالب)</label>
                                     <div className="flex gap-2">

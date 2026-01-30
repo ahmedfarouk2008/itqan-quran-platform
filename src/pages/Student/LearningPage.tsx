@@ -3,17 +3,8 @@ import {
   Star,
   AlertCircle
 } from 'lucide-react';
-import '../../styles/pages/learning.css';
-
-// ==============================================
-// Learning Page - صفحة التعلّم (حفظ فقط)
-// ==============================================
-
-interface LearningPageProps {
-  onNavigate: (tab: string) => void;
-}
-
 import { useAuth } from '../../contexts/AuthContext';
+import '../../styles/pages/learning.css';
 
 // ==============================================
 // Learning Page - صفحة التعلّم (حفظ فقط)
@@ -32,11 +23,9 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     surahNumber: 0, // Could be mapped if needed, simplified for now
     totalAyahs: 30, // Default or could be dynamic
     currentStart: 1, // Simplified
-    memorizedAyahs: profile?.memorized_ayahs || 0,
+    memorizedAyahs: profile?.memorized_ayahs || 0, // Now represents Juz
     teacherNotes: profile?.teacher_notes || []
   };
-
-  const progressPercent = Math.round((data.memorizedAyahs / 6000) * 100); // Global progress approx
 
   return (
     <div className="learning-page animate-fadeIn">
@@ -59,20 +48,11 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               <div className="surah-info">
                 <h2 className="surah-name">سورة {data.currentSurah}</h2>
                 <div className="ayah-range">
-                  <span>عدد الآيات المحفوظة: {data.memorizedAyahs}</span>
+                  <span>الجزء الحالي: {data.memorizedAyahs}</span>
                 </div>
               </div>
 
-              {/* Progress */}
-              <div className="progress-section">
-                <div className="progress-header">
-                  <span>التقدم العام</span>
-                  <span className="progress-percent">{progressPercent}%</span>
-                </div>
-                <div className="progress progress-lg">
-                  <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
-                </div>
-              </div>
+              {/* Progress Removed */}
             </div>
           </div>
 

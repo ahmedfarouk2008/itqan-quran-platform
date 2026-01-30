@@ -181,14 +181,9 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                         <div className="progress-info">
                             <div className="progress-stats">
                                 <span className="progress-current">الآية {(user as any).currentAyah || 1}</span>
-                                <span className="progress-total">من {(user as any).totalMemorized || 30}</span>
+                                <span className="progress-total">الجزء {(user as any).totalMemorized || 1}</span>
                             </div>
-                            <div className="progress progress-lg">
-                                <div
-                                    className="progress-bar"
-                                    style={{ width: `${Math.min((((user as any).currentAyah || 1) / ((user as any).totalMemorized || 30)) * 100, 100)}%` }}
-                                />
-                            </div>
+                            {/* Progress bar removed as it doesn't map 1:1 anymore or needs complex calc */}
                         </div>
 
                         {/* Audio button removed */}

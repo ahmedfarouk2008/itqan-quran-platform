@@ -444,7 +444,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                                             <div className="student-info-group">
                                                 <div className="student-avatar">
                                                     {session.studentAvatar ? (
-                                                        <img src={session.studentAvatar} alt={session.studentName} />
+                                                        <img width={50} height={50} src={session.studentAvatar} alt={session.studentName} />
                                                     ) : (
                                                         session.studentName.charAt(0)
                                                     )}

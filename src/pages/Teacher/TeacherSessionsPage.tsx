@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Calendar,
     Clock,
@@ -13,7 +13,7 @@ import {
     Trash2,
     Link,
 } from 'lucide-react';
-import { useSessions, useStudents, useTeachers } from '../../hooks';
+import { useSessions, useStudents } from '../../hooks';
 import { useAuth } from '../../contexts/AuthContext';
 import '../../styles/pages/teacher-sessions.css';
 
@@ -44,9 +44,9 @@ const weekDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأر�
 const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _onNavigate }) => {
     const { sessions: firebaseSessions, updateSession, createSession, deleteSession } = useSessions();
     const { students } = useStudents();
-    const { getTeacherSlots, saveTeacherSlots } = useTeachers();
-    const { profile } = useAuth();
-    const [activeTab, setActiveTab] = useState<'calendar' | 'list' | 'slots'>('calendar');
+
+
+    const [activeTab, setActiveTab] = useState<'calendar' | 'list'>('calendar');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showAddModal, setShowAddModal] = useState(false);
     const [filterStatus, setFilterStatus] = useState<'all' | 'scheduled' | 'completed' | 'cancelled' | 'pending'>('all');
@@ -212,56 +212,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
         }
     };
 
-    // Slots persistence
-    const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
-    const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
 
-    // Fetch initial slots
-    useEffect(() => {
-        if (activeTab === 'slots' && profile?.id) {
-            setIsLoadingSlots(true);
-            getTeacherSlots(profile.id).then(slots => {
-                const dayMapReversed = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-                const formattedSlots = slots.map(s => `${dayMapReversed[s.day_of_week]}-${s.start_time}`);
-                setSelectedSlots(formattedSlots);
-            }).catch(err => {
-                console.error("Error fetching slots:", err);
-                alert("حدث خطأ أثناء تحميل الأوقات المتاحة");
-            }).finally(() => {
-                setIsLoadingSlots(false);
-            });
-        }
-    }, [activeTab, profile?.id, getTeacherSlots]);
-
-    const toggleSlot = (slotId: string) => {
-        const newSlots = selectedSlots.includes(slotId)
-            ? selectedSlots.filter(id => id !== slotId)
-            : [...selectedSlots, slotId];
-
-        setSelectedSlots(newSlots);
-        // No local storage save here, wait for manual save
-    };
-
-    const handleSaveSlots = async () => {
-        if (!profile?.id) return;
-
-        setIsSaving(true);
-        // Convert selectedSlots strings back to objects
-        const slotsToSave = selectedSlots.map(s => {
-            const [day, time] = s.split('-');
-            return { day, time };
-        });
-
-        const { error } = await saveTeacherSlots(profile.id, slotsToSave);
-        setIsSaving(false);
-
-        if (error) {
-            alert('حدث خطأ أثناء حفظ الأوقات');
-        } else {
-            alert('تم حفظ الأوقات المتاحة بنجاح');
-        }
-    };
 
     const formatDate = (date: Date) => {
         return date.toLocaleDateString('ar-EG', {
@@ -294,7 +245,15 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
     );
 
     const filteredSessions = sessions.filter(
-        (s) => filterStatus === 'all' || s.status === filterStatus
+        (s) => {
+            if (filterStatus === 'all') return true;
+            if (filterStatus === 'completed') {
+                // Include explicit 'completed' status OR 'scheduled' sessions in the past
+                const isPastScheduled = s.status === 'scheduled' && new Date(s.date) < new Date(new Date().toDateString());
+                return s.status === 'completed' || isPastScheduled;
+            }
+            return s.status === filterStatus;
+        }
     );
 
     const navigateMonth = (direction: 'prev' | 'next') => {
@@ -381,13 +340,6 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                 >
                     <Clock size={18} />
                     القائمة
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'slots' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('slots')}
-                >
-                    <Edit size={18} />
-                    الأوقات المتاحة
                 </button>
             </div>
 
@@ -579,50 +531,7 @@ const TeacherSessionsPage: React.FC<TeacherSessionsPageProps> = ({ onNavigate: _
                 </div>
             )}
 
-            {/* Time Slots View */}
-            {activeTab === 'slots' && (
-                <div className="slots-view">
-                    <div className="slots-header">
-                        <h3>أوقاتك المتاحة للحجز</h3>
-                        <p>حدد الأوقات التي تكونين متاحة فيها للجلسات (اضغط للتفعيل/التعطيل)</p>
-                    </div>
 
-                    <div className="slots-grid">
-                        {weekDays.map((day) => (
-                            <div key={day} className="day-column">
-                                <div className="day-header">{day}</div>
-                                <div className="time-slots">
-                                    {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'].map((time) => {
-                                        const slotId = `${day}-${time}`;
-                                        const isSelected = selectedSlots.includes(slotId);
-                                        return (
-                                            <button
-                                                key={time}
-                                                className={`time-slot ${isSelected ? 'available' : ''}`}
-                                                onClick={() => toggleSlot(slotId)}
-                                            >
-                                                {time}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="slots-footer">
-                        <button
-                            className="save-btn"
-                            onClick={handleSaveSlots}
-                            disabled={isLoadingSlots || isSaving}
-                            style={{ opacity: (isLoadingSlots || isSaving) ? 0.7 : 1 }}
-                        >
-                            <Check size={18} />
-                            {isSaving ? 'جاري الحفظ...' : (isLoadingSlots ? 'جاري التحميل...' : 'حفظ التغييرات')}
-                        </button>
-                    </div>
-                </div>
-            )}
 
             {/* Add Session Modal */}
             {showAddModal && (

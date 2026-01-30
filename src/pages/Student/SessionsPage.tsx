@@ -12,7 +12,6 @@ import {
 import { useSessions } from '../../hooks/useSessions';
 import { useTeachers } from '../../hooks/useTeachers';
 import { useToast } from '../../contexts/ToastContext';
-import { TeacherSlot } from '../../lib/firebase';
 import '../../styles/pages/sessions.css';
 
 interface SessionsPageProps {
@@ -219,57 +218,15 @@ interface BookingModalProps {
 const BookingModal: React.FC<BookingModalProps> = ({ onClose }) => {
     const { success, error: showError } = useToast();
     const { createSession } = useSessions();
-    const { teachers, isLoading: teachersLoading, getTeacherSlots } = useTeachers();
+    const { teachers, isLoading: teachersLoading } = useTeachers();
 
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [notes, setNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Slots State
-    const [availableSlots, setAvailableSlots] = useState<TeacherSlot[]>([]);
-    const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-    const [validationError, setValidationError] = useState<string | null>(null);
-
     // Auto-select first teacher or handle if none
-    const teacherId = teachers.length > 0 ? teachers[0].id : 'teacher_placeholder_id';
-
-    // Fetch slots when teacher is determined
-    React.useEffect(() => {
-        if (teacherId && teacherId !== 'teacher_placeholder_id') {
-            setIsLoadingSlots(true);
-            getTeacherSlots(teacherId).then(slots => {
-                setAvailableSlots(slots);
-                setIsLoadingSlots(false);
-            });
-        }
-    }, [teacherId, getTeacherSlots]);
-
-    // Validate selected time
-    React.useEffect(() => {
-        if (!date || !time || availableSlots.length === 0) {
-            setValidationError(null);
-            return;
-        }
-
-        const selectedDate = new Date(date);
-        const dayOfWeek = selectedDate.getDay(); // 0 = Sunday
-        const selectedTimeHour = time; // "HH:MM"
-
-        const slot = availableSlots.find(s =>
-            s.day_of_week === dayOfWeek &&
-            s.start_time === selectedTimeHour &&
-            s.is_available
-        );
-
-        if (!slot) {
-            setValidationError('هذا الموعد غير متاح لدى المعلمة. يرجى اختيار موعد آخر.');
-        } else {
-            setValidationError(null);
-        }
-    }, [date, time, availableSlots]);
-
-    const handleSubmit = async () => {
+    const teacherId = teachers.length > 0 ? teachers[0].id : 'teacher_placeholder_id'; const handleSubmit = async () => {
         if (!date || !time || !teacherId) return;
 
         setIsSubmitting(true);
@@ -297,7 +254,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ onClose }) => {
         }
     };
 
-    const canSubmit = date && time && teacherId && !teachersLoading && !validationError && !isLoadingSlots;
+    const canSubmit = date && time && teacherId && !teachersLoading;
 
     return (
         <>
@@ -351,8 +308,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ onClose }) => {
                                     onChange={(e) => setTime(e.target.value)}
                                     required
                                 />
-                                {validationError && <p className="text-red-500 text-xs mt-1">{validationError}</p>}
-                                {isLoadingSlots && <p className="text-gray-500 text-xs mt-1">جاري التحقق من المواعيد...</p>}
+                                {false && <p className="text-gray-500 text-xs mt-1">جاري التحقق من المواعيد...</p>}
                             </div>
                         </div>
 

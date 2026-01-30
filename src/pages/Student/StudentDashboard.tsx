@@ -230,7 +230,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                         <div className="quick-action-icon">
                             <Calendar size={24} />
                         </div>
-                        <span>احجز جلسة</span>
+                        <span>جلساتي</span>
                     </button>
 
                     {/* Audio action removed */}

@@ -3,6 +3,7 @@ import { db } from '../lib/firebase';
 import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { FollowUpRecord } from '../components/Homework/FollowUpTable';
+import { notificationService } from '../services/notificationService';
 
 // ==============================================
 // FollowUpRecords Hook - إدارة سجلات المتابعة
@@ -100,6 +101,20 @@ export const useFollowUpRecords = (studentId: string | null): UseFollowUpRecords
                 teacher_id: user.uid,
                 created_at: new Date().toISOString()
             });
+
+            // Send notification to student
+            try {
+                await notificationService.createNotification(
+                    studentId,
+                    'homework_reviewed', // Using existing type or adding new one
+                    'سجل متابعة جديد',
+                    `قام المعلم بإضافة سجل متابعة جديد ليوم ${recordData.day}`,
+                    '/student/homework' // Correct link to where records are shown
+                );
+            } catch (notifErr) {
+                console.error('Failed to send notification for record:', notifErr);
+            }
+
             return { error: null };
         } catch (err) {
             console.error('Error adding record:', err);

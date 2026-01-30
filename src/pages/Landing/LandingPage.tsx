@@ -58,17 +58,20 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
                     {/* Hero Image/Decoration */}
                     <div className="hero-decoration">
-                        <div className="hero-image-wrapper">
-                            <img
-                                src="https://images.unsplash.com/photo-1609599006353-e629aaabfeae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="تطبيق إتقان لتعليم القرآن"
-                                className="hero-img"
-                                style={{
-                                    width: '100%',
-                                    height: 'auto',
-                                    borderRadius: '24px',
-                                    boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)'
-                                }}
+                        <div className="hero-image-wrapper" style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            borderRadius: '30px',
+                            padding: '4rem',
+                            aspectRatio: '1'
+                        }}>
+                            <BookOpen
+                                size={280}
+                                color="var(--primary)"
+                                strokeWidth={0.8}
+                                style={{ filter: 'drop-shadow(0 10px 20px rgba(16, 185, 129, 0.2))' }}
                             />
                         </div>
                     </div>

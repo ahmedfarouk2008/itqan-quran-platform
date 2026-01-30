@@ -1,12 +1,7 @@
 import React from 'react';
 import {
     BookOpen,
-    GraduationCap,
-    ChevronLeft,
-    Star,
-    Users,
-    CheckCircle,
-    Play
+    ChevronLeft
 } from 'lucide-react';
 import { UserRole } from '../../types';
 import '../../styles/pages/landing.css';
@@ -20,34 +15,7 @@ interface LandingPageProps {
     onSelectRole: (role: UserRole) => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onSelectRole }) => {
-    const steps = [
-        {
-            number: '١',
-            title: 'سجّل حسابك',
-            description: 'أنشئ حسابك في ثوانٍ واختر هدفك التعليمي',
-            icon: Users,
-        },
-        {
-            number: '٢',
-            title: 'اختر معلمتك',
-            description: 'تواصل مع معلمة متخصصة تناسب مستواك',
-            icon: GraduationCap,
-        },
-        {
-            number: '٣',
-            title: 'ابدأ رحلتك',
-            description: 'احجز جلساتك وتابع تقدمك يومياً',
-            icon: BookOpen,
-        },
-    ];
-
-    const features = [
-        'جلسات فردية مع معلمات متخصصات',
-        'خطة تعليمية مخصصة لكل طالب',
-        'متابعة مستمرة وتقييم دوري',
-        'مرونة في اختيار المواعيد',
-    ];
+const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
     return (
         <div className="landing-page">
@@ -85,39 +53,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onSelectRole })
                                 <span>ابدأ الآن</span>
                                 <ChevronLeft size={20} />
                             </button>
-                            <button className="btn btn-outline btn-lg">
-                                <Play size={18} />
-                                <span>شاهد كيف تعمل</span>
-                            </button>
-                        </div>
-
-                        {/* Features List */}
-                        <div className="hero-features">
-                            {features.map((feature, index) => (
-                                <div key={index} className="hero-feature">
-                                    <CheckCircle size={18} className="hero-feature-icon" />
-                                    <span>{feature}</span>
-                                </div>
-                            ))}
                         </div>
                     </div>
 
                     {/* Hero Image/Decoration */}
                     <div className="hero-decoration">
-                        <div className="hero-card">
-                            <div className="hero-card-header">
-                                <Star size={24} className="hero-card-star" />
-                                <span>تقييم الطلاب</span>
-                            </div>
-                            <div className="hero-card-rating">
-                                <span className="rating-number">4.9</span>
-                                <div className="rating-stars">
-                                    {[1, 2, 3, 4, 5].map(i => (
-                                        <Star key={i} size={16} fill="#fbbf24" color="#fbbf24" />
-                                    ))}
-                                </div>
-                                <span className="rating-count">+500 طالب</span>
-                            </div>
+                        <div className="hero-image-wrapper">
+                            <img
+                                src="https://images.unsplash.com/photo-1609599006353-e629aaabfeae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="تطبيق إتقان لتعليم القرآن"
+                                className="hero-img"
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    borderRadius: '24px',
+                                    boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)'
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
@@ -125,72 +77,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onSelectRole })
                 {/* Decorative Elements */}
                 <div className="hero-bg-pattern" />
                 <div className="hero-bg-gradient" />
-            </section>
-
-            {/* How It Works Section */}
-            <section className="steps-section">
-                <div className="section-container">
-                    <h2 className="section-title">كيف تعمل المنصة؟</h2>
-                    <p className="section-subtitle">ثلاث خطوات بسيطة لبدء رحلتك مع القرآن</p>
-
-                    <div className="steps-grid">
-                        {steps.map((step, index) => (
-                            <div key={index} className="step-card">
-                                <div className="step-number">{step.number}</div>
-                                <div className="step-icon">
-                                    <step.icon size={28} />
-                                </div>
-                                <h3 className="step-title">{step.title}</h3>
-                                <p className="step-description">{step.description}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Role Selection Section */}
-            <section className="roles-section">
-                <div className="section-container">
-                    <h2 className="section-title">اختر طريقك</h2>
-
-                    <div className="roles-grid">
-                        {/* Student Option */}
-                        <button
-                            className="role-card"
-                            onClick={() => onSelectRole(UserRole.STUDENT)}
-                        >
-                            <div className="role-icon role-icon-student">
-                                <Users size={32} />
-                            </div>
-                            <h3 className="role-title">أنا طالب</h3>
-                            <p className="role-description">
-                                أريد تعلم القرآن الكريم مع معلمة متخصصة ومتابعة تقدمي
-                            </p>
-                            <div className="role-cta">
-                                <span>ابدأ رحلة التعلم</span>
-                                <ChevronLeft size={18} />
-                            </div>
-                        </button>
-
-                        {/* Teacher Option */}
-                        <button
-                            className="role-card"
-                            onClick={() => onSelectRole(UserRole.TEACHER)}
-                        >
-                            <div className="role-icon role-icon-teacher">
-                                <GraduationCap size={32} />
-                            </div>
-                            <h3 className="role-title">أنا معلمة</h3>
-                            <p className="role-description">
-                                أريد تعليم القرآن الكريم وإدارة طلابي بسهولة
-                            </p>
-                            <div className="role-cta">
-                                <span>انضم كمعلمة</span>
-                                <ChevronLeft size={18} />
-                            </div>
-                        </button>
-                    </div>
-                </div>
             </section>
 
             {/* FAQ Section */}

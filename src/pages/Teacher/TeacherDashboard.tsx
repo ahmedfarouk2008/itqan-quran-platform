@@ -273,23 +273,44 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                                 <p>لا توجد جلسات في هذا اليوم</p>
                             </div>
                         ) : displayedSessions.map((session) => (
-                            <div key={session.id} className={`session-card ${session.isNext ? 'next' : ''}`}>
+                            <div key={session.id} className={`session-card ${session.isNext ? 'next' : ''}`} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '1rem',
+                                marginBottom: '0.8rem',
+                                gap: '1rem'
+                            }}>
                                 {session.isNext && <div className="next-badge">التالية</div>}
-                                <div className="session-time">
-                                    <span className="time">{session.time}</span>
-                                    <span className="duration">{session.duration} دقيقة</span>
-                                </div>
-                                <div className="session-info">
-                                    <div className="session-details">
-                                        <span className="student-name">{session.studentName}</span>
-                                        <span className="session-type">
-                                            {session.type} - {session.surah}
-                                        </span>
+
+                                <div className="session-info" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                                    <h4 className="student-name" style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>{session.studentName}</h4>
+                                    <div className="session-details" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <span className="session-type">{session.type}</span>
+                                        <span>•</span>
+                                        <span className="session-surah">{session.surah}</span>
                                     </div>
                                 </div>
-                                <button className="start-session-btn" onClick={() => onNavigate('teacher-sessions')}>
-                                    <Play size={16} />
+
+                                <div className="session-time" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                                    <span className="time" style={{ fontWeight: 600, color: 'var(--primary)' }}>{session.time}</span>
+                                    <span className="duration" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{session.duration} دقيقة</span>
+                                </div>
+
+                                <button className="start-session-btn" onClick={() => onNavigate('teacher-sessions')} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--primary-light)',
+                                    background: 'var(--primary-bg)',
+                                    color: 'var(--primary)',
+                                    cursor: 'pointer',
+                                    fontSize: '0.9rem'
+                                }}>
                                     {session.isNext ? 'بدء' : 'تفاصيل'}
+                                    <Play size={14} style={{ transform: 'rotate(180deg)' }} />
                                 </button>
                             </div>
                         ))}

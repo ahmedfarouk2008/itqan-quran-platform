@@ -14,7 +14,6 @@ import {
     Link,
 } from 'lucide-react';
 import { useSessions, useStudents } from '../../hooks';
-import { useAuth } from '../../contexts/AuthContext';
 import '../../styles/pages/teacher-sessions.css';
 
 // ==============================================

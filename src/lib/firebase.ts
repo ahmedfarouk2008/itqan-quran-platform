@@ -39,6 +39,7 @@ export type Profile = {
     rating: number | null;
     status: 'active' | 'inactive' | 'new';
     current_surah: string | null;
+    current_ayah: number | null;
     memorized_ayahs: number | null;
     teacher_notes: Array<{ type: 'warning' | 'success'; text: string; date: string }> | null;
     total_surahs: number | null;

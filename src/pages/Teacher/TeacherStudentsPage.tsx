@@ -38,6 +38,7 @@ interface Student {
     trend: 'up' | 'down' | 'stable';
     joinedAt: string;
     currentSurah: string;
+    currentAyah: number;
     teacherNotes: Array<{ type: 'warning' | 'success'; text: string; date: string }>;
 }
 
@@ -56,7 +57,10 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
     const students: Student[] = useMemo(() => {
         return firebaseStudents.map(p => {
             // Calculate session stats dynamically
-            const studentSessions = sessions.filter(s => s.student_id === p.id && s.status === 'مكتملة');
+            const studentSessions = sessions.filter(s =>
+                s.student_id === p.id &&
+                (s.status === 'مكتملة' || (s.status === 'مؤكدة' && new Date(s.scheduled_at) < new Date()))
+            );
             const totalSessions = studentSessions.length;
 
             // Find last session date
@@ -81,6 +85,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                 trend: 'stable' as const,
                 joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
                 currentSurah: p.current_surah || 'لم يبدأ',
+                currentAyah: p.current_ayah || 1,
                 teacherNotes: p.teacher_notes || []
             };
         });
@@ -121,6 +126,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
     // Local state for editing form
     const [editForm, setEditForm] = useState<{
         currentSurah: string;
+        currentAyah: number;
         memorizedAyahs: number;
         status: 'active' | 'inactive' | 'new';
         level: string; // Add level to form state
@@ -132,6 +138,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
         if (selectedStudent) {
             setEditForm({
                 currentSurah: selectedStudent.currentSurah,
+                currentAyah: selectedStudent.currentAyah,
                 memorizedAyahs: selectedStudent.memorizedSurahs * 20,
                 status: selectedStudent.status,
                 level: selectedStudent.level, // Init level
@@ -145,6 +152,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
 
         const updates: any = {};
         if (editForm.currentSurah !== selectedStudent.currentSurah) updates.current_surah = editForm.currentSurah;
+        if (editForm.currentAyah !== selectedStudent.currentAyah) updates.current_ayah = editForm.currentAyah;
         if (editForm.memorizedAyahs !== selectedStudent.memorizedSurahs * 20) updates.memorized_ayahs = editForm.memorizedAyahs;
         if (editForm.status !== selectedStudent.status) updates.status = editForm.status;
         if (editForm.level !== selectedStudent.level) updates.level = editForm.level; // Add level update
@@ -326,13 +334,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                             <span className="label">سورة محفوظة</span>
                                         </div>
                                     </div>
-                                    <div className="detail-stat">
-                                        <Award size={20} />
-                                        <div>
-                                            <span className="value">{selectedStudent.progress}%</span>
-                                            <span className="label">التقدم العام</span>
-                                        </div>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -350,6 +352,15 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                         className="form-input w-full p-2 border rounded"
                                         value={editForm.currentSurah}
                                         onChange={(e) => setEditForm({ ...editForm, currentSurah: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>الآية الحالية</label>
+                                    <input
+                                        type="number"
+                                        className="form-input w-full p-2 border rounded"
+                                        value={editForm.currentAyah}
+                                        onChange={(e) => setEditForm({ ...editForm, currentAyah: parseInt(e.target.value) || 1 })}
                                     />
                                 </div>
                                 <div className="form-group">

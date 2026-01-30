@@ -65,12 +65,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                             background: 'rgba(16, 185, 129, 0.1)',
                             borderRadius: '30px',
                             padding: '4rem',
-                            aspectRatio: '1'
+                            aspectRatio: '1',
+                            width: '100%',
+                            maxWidth: '500px'
                         }}>
                             <BookOpen
-                                size={280}
-                                color="var(--primary)"
-                                strokeWidth={0.8}
+                                size={200}
+                                color="#10B981"
+                                strokeWidth={1.5}
                                 style={{ filter: 'drop-shadow(0 10px 20px rgba(16, 185, 129, 0.2))' }}
                             />
                         </div>

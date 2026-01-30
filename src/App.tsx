@@ -171,6 +171,9 @@ const AppContent: React.FC = () => {
                     level: profile.level as any,
                     goals: profile.goals as any,
                     createdAt: profile.created_at,
+                    currentSurah: profile.current_surah || undefined,
+                    currentAyah: profile.current_ayah || undefined,
+                    totalMemorized: profile.memorized_ayahs || undefined,
                 };
 
                 return (

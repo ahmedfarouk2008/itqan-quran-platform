@@ -38,6 +38,7 @@ interface Student {
     joinedAt: string;
     currentSurah: string;
     currentAyah: number;
+    rawMemorizedAyahs: number;
     teacherNotes: Array<{ type: 'warning' | 'success'; text: string; date: string }>;
 }
 
@@ -85,6 +86,8 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                 joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
                 currentSurah: p.current_surah || 'لم يبدأ',
                 currentAyah: p.current_ayah || 1,
+                // Store raw value for editing to avoid precision loss from division/multiplication
+                rawMemorizedAyahs: p.memorized_ayahs || 0,
                 teacherNotes: p.teacher_notes || []
             };
         });
@@ -138,7 +141,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
             setEditForm({
                 currentSurah: selectedStudent.currentSurah,
                 currentAyah: selectedStudent.currentAyah,
-                memorizedAyahs: selectedStudent.memorizedSurahs * 20,
+                memorizedAyahs: selectedStudent.rawMemorizedAyahs,
                 status: selectedStudent.status,
                 level: selectedStudent.level, // Init level
                 newNote: ''

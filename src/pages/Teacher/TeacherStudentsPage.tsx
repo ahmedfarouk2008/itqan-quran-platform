@@ -239,7 +239,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                         <div className="card-header centered">
                             <div className="student-avatar large">
                                 {student.avatar ? (
-                                    <img src={student.avatar} alt={student.name} />
+                                    <img width={50} height={50} src={student.avatar} alt={student.name} />
                                 ) : (
                                     student.name.charAt(0)
                                 )}

@@ -3,12 +3,9 @@ import {
     Users,
     Search,
     Filter,
-    MoreVertical,
     BookOpen,
     Calendar,
     ChevronLeft,
-    TrendingUp,
-    TrendingDown,
     Clock,
     Award,
     Eye,
@@ -119,16 +116,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
         }
     };
 
-    const getTrendIcon = (trend: Student['trend']) => {
-        switch (trend) {
-            case 'up':
-                return <TrendingUp size={16} className="trend-icon up" />;
-            case 'down':
-                return <TrendingDown size={16} className="trend-icon down" />;
-            default:
-                return null;
-        }
-    };
+
 
     // Local state for editing form
     const [editForm, setEditForm] = useState<{

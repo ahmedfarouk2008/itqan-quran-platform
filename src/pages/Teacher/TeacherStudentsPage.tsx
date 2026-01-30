@@ -7,7 +7,6 @@ import {
     Calendar,
     ChevronLeft,
     Clock,
-    Award,
     Eye,
     Save, // Import Save icon
 } from 'lucide-react';

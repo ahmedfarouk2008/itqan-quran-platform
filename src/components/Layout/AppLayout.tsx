@@ -85,7 +85,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     <span>إتقان</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <NotificationDropdown />
+                    {user.role === 'student' && <NotificationDropdown />}
                     <button
                         className="mobile-menu-btn"
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -111,7 +111,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     </div>
                     {/* Only show on desktop sidebar here, mobile header has its own */}
                     <div className="desktop-notification">
-                        <NotificationDropdown />
+                        {user.role === 'student' && <NotificationDropdown />}
                     </div>
                 </div>
 

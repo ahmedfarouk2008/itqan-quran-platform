@@ -7,3 +7,4 @@ export { useHomework } from './useHomework';
 export { useMessages } from './useMessages';
 export { useTeachers } from './useTeachers';
 export { useStudents } from './useStudents';
+export { useNotifications } from './useNotifications';

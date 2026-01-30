@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { db, Session } from '../lib/firebase';
 import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import { notificationService } from '../services/notificationService';
 
 // ==============================================
 // Sessions Hook - إدارة الجلسات
@@ -135,23 +136,29 @@ export const useSessions = (): UseSessionsReturn => {
                 return { error: new Error('Missing student or teacher ID') };
             }
 
-            const docRef = await addDoc(collection(db, 'sessions'), sessionData);
+            await addDoc(collection(db, 'sessions'), sessionData);
 
             // Create Notification
-            const notificationData = {
-                userId: isTeacher ? sessionData.student_id : sessionData.teacher_id,
-                type: 'session_request', // Using string directly to avoid enum import issues conform to NotificationType
-                title: isTeacher ? 'تم جدولة جلسة جديدة' : 'طلب حجز جلسة جديد',
-                message: isTeacher
+            try {
+                const message = isTeacher
                     ? `قام المعلم بجدولة جلسة جديدة معك موعدها ${new Date(data.scheduled_at).toLocaleDateString('ar-EG')}`
-                    : `لديك طلب حجز جلسة جديد، يرجى مراجعته.`,
-                isRead: false,
-                createdAt: new Date().toISOString(),
-                link: isTeacher ? '/student/sessions' : '/teacher/sessions',
-                relatedId: docRef.id
-            };
+                    : `لديك طلب حجز جلسة جديد، يرجى مراجعته.`;
 
-            await addDoc(collection(db, 'notifications'), notificationData);
+                const title = isTeacher ? 'تم جدولة جلسة جديدة' : 'طلب حجز جلسة جديد';
+                const type = 'session_request';
+                const link = isTeacher ? '/student/sessions' : '/teacher/sessions';
+                const targetUserId = isTeacher ? sessionData.student_id : sessionData.teacher_id;
+
+                await notificationService.createNotification(
+                    targetUserId,
+                    type,
+                    title,
+                    message,
+                    link
+                );
+            } catch (notifErr) {
+                console.error('Failed to send notification for session:', notifErr);
+            }
 
             await fetchSessions();
             return { error: null };

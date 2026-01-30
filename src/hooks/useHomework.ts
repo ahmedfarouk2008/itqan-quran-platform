@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { db, Homework } from '../lib/firebase';
 import { collection, query, where, getDocs, addDoc, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import { notificationService } from '../services/notificationService';
 
 // ==============================================
 // Homework Hook - إدارة الواجبات
@@ -148,6 +149,20 @@ export const useHomework = (): UseHomeworkReturn => {
             };
 
             await addDoc(collection(db, 'homework'), newHomeworkData);
+
+            // Send notification to student
+            try {
+                await notificationService.createNotification(
+                    data.student_id,
+                    'homework_assigned',
+                    'واجب جديد',
+                    `تم تعيين واجب جديد: ${data.title}`,
+                    '/student/homework'
+                );
+            } catch (notifErr) {
+                console.error('Failed to send notification:', notifErr);
+                // Don't fail the whole operation if notification fails
+            }
 
             await fetchHomework();
             return { error: null };

@@ -11,6 +11,7 @@ import {
     X
 } from 'lucide-react';
 import { UserRole, User as UserType } from '../../types';
+import NotificationDropdown from '../Notifications/NotificationDropdown';
 import '../../styles/layout.css';
 
 // ==============================================
@@ -83,12 +84,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     <BookOpen size={28} />
                     <span>إتقان</span>
                 </div>
-                <button
-                    className="mobile-menu-btn"
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                >
-                    {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <NotificationDropdown />
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    >
+                        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </header>
 
             {/* Sidebar Overlay (Mobile) */}
@@ -101,8 +105,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 {/* Sidebar Header */}
                 <div className="sidebar-header">
-                    <BookOpen size={32} className="sidebar-logo" />
-                    <span className="sidebar-title">إتقان</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <BookOpen size={32} className="sidebar-logo" />
+                        <span className="sidebar-title">إتقان</span>
+                    </div>
+                    {/* Only show on desktop sidebar here, mobile header has its own */}
+                    <div className="desktop-notification">
+                        <NotificationDropdown />
+                    </div>
                 </div>
 
                 {/* Navigation */}

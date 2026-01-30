@@ -8,7 +8,6 @@ import {
     AlertCircle,
     Loader2
 } from 'lucide-react';
-import { User } from '../../types';
 import { useSessions, useTeachers } from '../../hooks';
 import { useFollowUpRecords } from '../../hooks/useFollowUpRecords';
 import '../../styles/pages/student-dashboard.css';
@@ -17,17 +16,28 @@ import '../../styles/pages/student-dashboard.css';
 // Student Dashboard - لوحة تحكم الطالب
 // ==============================================
 
+import { useTour } from '../../contexts/TourContext';
+
 interface StudentDashboardProps {
-    user: User;
+    user: {
+        id: string;
+        name: string;
+        // ... other props
+        [key: string]: any;
+    };
     onNavigate: (tab: string) => void;
 }
 
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate }) => {
     const { upcomingSessions, isLoading: sessionsLoading } = useSessions();
     const { teachers, isLoading: teachersLoading } = useTeachers();
-
-    // Fetch follow-up records for the current student
     const { records: followUpRecords, isLoading: recordsLoading } = useFollowUpRecords(user.id);
+    const { startTour } = useTour();
+
+    // Start tour on mount
+    React.useEffect(() => {
+        startTour('student');
+    }, []);
 
     const isLoading = sessionsLoading || teachersLoading || recordsLoading;
 
@@ -102,7 +112,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                         />
                         {/* Streak Badge removed */}
                     </div>
-                    <div className="welcome-text">
+                    <div className="welcome-text" id="tour-student-welcome">
                         <h1 className="welcome-title">مرحباً، {user.name.split(' ')[0]}</h1>
                         <p className="welcome-subtitle">
                             واصل رحلتك مع القرآن الكريم
@@ -117,7 +127,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
             {/* Main Dashboard Cards */}
             <div className="dashboard-cards">
                 {/* Next Session Card */}
-                <div className="dashboard-card session-card">
+                <div className="dashboard-card session-card" id="tour-student-session">
                     <div className="card-header">
                         <div className="card-icon card-icon-session">
                             <Video size={20} />
@@ -164,7 +174,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                 </div>
 
                 {/* Progress Card */}
-                <div className="dashboard-card progress-card">
+                <div className="dashboard-card progress-card" id="tour-student-progress">
                     <div className="card-header">
                         <div className="card-icon card-icon-progress">
                             <BookOpen size={20} />
@@ -194,7 +204,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onNavigate })
                 {/* Note card moved up to fill the gap, effectively just removing the homework card div before it */}
 
                 {/* Teacher Note Card */}
-                <div className="dashboard-card note-card">
+                <div className="dashboard-card note-card" id="tour-student-latest-record">
                     <div className="card-header">
                         <div className="card-icon card-icon-note">
                             <AlertCircle size={20} />

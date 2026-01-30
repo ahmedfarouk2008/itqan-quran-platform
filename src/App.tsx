@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
+import { TourProvider } from './contexts/TourContext';
 
 // Pages
 import LandingPage from './pages/Landing/LandingPage';
@@ -244,7 +245,9 @@ const App: React.FC = () => {
     return (
         <AuthProvider>
             <ToastProvider>
-                <AppContent />
+                <TourProvider>
+                    <AppContent />
+                </TourProvider>
             </ToastProvider>
         </AuthProvider>
     );

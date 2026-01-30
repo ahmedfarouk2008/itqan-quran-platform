@@ -25,6 +25,8 @@ const HomeworkPage: React.FC<HomeworkPageProps> = () => {
                 <p className="page-subtitle">سجل الحفظ والمراجعة اليومي</p>
             </header>
 
+
+
             {/* Follow-up Table */}
             {isLoading ? (
                 <div className="flex justify-center p-10">

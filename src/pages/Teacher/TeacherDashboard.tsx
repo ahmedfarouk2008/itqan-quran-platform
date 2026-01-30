@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSessions, useStudents } from '../../hooks';
+import { useTour } from '../../contexts/TourContext';
 import '../../styles/pages/teacher-dashboard.css';
 
 // ==============================================
@@ -20,31 +21,35 @@ interface TeacherDashboardProps {
     onNavigate: (page: string) => void;
 }
 
-// ... imports remain the same
-
 const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
     const { profile } = useAuth();
-    const { upcomingSessions: firebaseSessions, sessions: allSessions, isLoading: sessionsLoading } = useSessions();
-    const { students: firebaseStudents, isLoading: studentsLoading } = useStudents();
+    const { sessions, isLoading: sessionsLoading } = useSessions();
+    const { students, isLoading: studentsLoading } = useStudents();
+    const { startTour } = useTour();
     const [currentDate] = useState(new Date());
     const isLoading = sessionsLoading || studentsLoading;
+
+    // Start tour on mount
+    React.useEffect(() => {
+        startTour('teacher');
+    }, []);
 
     // Compute real dashboard stats from Firebase data
     const dashboardStats = useMemo(() => {
         const today = new Date();
-        const todaySessions = firebaseSessions.filter(s => {
+        const todaySessions = sessions.filter(s => {
             const date = new Date(s.scheduled_at);
             return date.getDate() === today.getDate() &&
                 date.getMonth() === today.getMonth() &&
                 date.getFullYear() === today.getFullYear();
         }).length;
         return {
-            totalStudents: firebaseStudents.length,
-            activeStudents: firebaseStudents.length,
+            totalStudents: students.length,
+            activeStudents: students.length,
             todaySessions: todaySessions,
             pendingHomework: 0,
         };
-    }, [firebaseStudents, firebaseSessions]);
+    }, [students, sessions]);
 
 
 
@@ -103,7 +108,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
             const dayName = date.toLocaleDateString('ar-EG', { weekday: 'short' });
             const dayNum = date.getDate();
             // Real sessions count per day
-            const sessionsCount = allSessions.filter(s => {
+            const sessionsCount = sessions.filter(s => {
                 const sDate = new Date(s.scheduled_at);
                 return sDate.getDate() === date.getDate() &&
                     sDate.getMonth() === date.getMonth() &&
@@ -130,7 +135,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
 
     // Filter sessions based on selected date
     const displayedSessions = useMemo(() => {
-        const sessionsForDate = firebaseSessions.filter(s => {
+        const sessionsForDate = sessions.filter(s => {
             const sDate = new Date(s.scheduled_at);
             return sDate.getDate() === selectedDate.getDate() &&
                 sDate.getMonth() === selectedDate.getMonth() &&
@@ -138,7 +143,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
         });
 
         return sessionsForDate.map((session) => {
-            const student = firebaseStudents.find(s => s.id === session.student_id);
+            const student = students.find(s => s.id === session.student_id);
             return {
                 id: session.id,
                 studentName: student ? student.name : 'طالب/ة',
@@ -149,7 +154,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                 isNext: false, // Only relevant for future sessions logic if needed
             };
         });
-    }, [selectedDate, firebaseSessions, firebaseStudents]);
+    }, [selectedDate, sessions, students]);
 
     if (isLoading) {
         return (
@@ -165,8 +170,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
     return (
         <div className="teacher-dashboard animate-fadeIn">
             {/* Header */}
-            <div className="dashboard-header">
-                <div className="header-content">
+            <header className="dashboard-header" id="tour-teacher-welcome">
+                <div className="header-welcome">
                     <h1 style={{ color: 'white' }}>مرحباً، {profile?.name || 'يا معلمة'} 👋</h1>
                     <p style={{ color: 'white' }}>لديك {dashboardStats.todaySessions} جلسات اليوم</p>
                 </div>
@@ -174,7 +179,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
                     <Calendar size={18} />
                     <span>{formattedDate}</span>
                 </div>
-            </div>
+            </header>
 
             {/* Weekly Calendar Widget */}
             <div className="weekly-calendar-widget">
@@ -225,7 +230,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onNavigate }) => {
             </div>
 
             {/* Stats Grid */}
-            <div className="stats-grid">
+            <div className="stats-grid" id="tour-teacher-stats">
                 <div className="stat-card students" onClick={() => onNavigate('teacher-students')}>
                     <div className="stat-icon">
                         <Users size={24} />

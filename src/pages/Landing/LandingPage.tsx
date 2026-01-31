@@ -61,15 +61,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                             display: 'flex',
                             justifyContent: 'center',
                             alignItems: 'center',
-                            background: 'rgba(16, 185, 129, 0.1)',
                             borderRadius: '30px',
                             padding: '4rem',
                             aspectRatio: '1',
                             width: '100%',
                             maxWidth: '500px'
                         }}>
-                            import quranHero from '../../assets/quran-hero.png';
-                            // ...
                             <img
                                 src={quranHero}
                                 alt="القرآن الكريم"

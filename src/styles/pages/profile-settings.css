@@ -40,7 +40,7 @@
     bottom: 0;
     right: 0;
     background: var(--primary);
-    color: white;
+    color: rgb(0, 0, 0);
     border: none;
     width: 36px;
     height: 36px;
@@ -50,7 +50,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    border: 2px solid white;
+    border: 2px solid rgb(0, 0, 0);
 }
 
 .change-avatar-btn:hover {
@@ -92,7 +92,8 @@
 
 .form-input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem; /* Space for icon on right */
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    /* Space for icon on right */
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background: var(--background);
@@ -123,7 +124,7 @@
     .profile-settings-page {
         padding: 1rem;
     }
-    
+
     .settings-grid {
         grid-template-columns: 1fr;
     }

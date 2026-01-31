@@ -182,7 +182,7 @@ const SignupPage: React.FC<SignupPageProps> = ({
                         </div>
                         {/* Password Strength */}
                         <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.75rem', color: '#6b7280' }}>
-                            <span style={{ color: password.length >= 8 ? '#10b981' : 'inherit' }}>•وارقام ٨ أحرف</span>
+                            <span style={{ color: password.length >= 8 ? '#10b981' : 'inherit' }}>• ٨ أحرف على الأقل وارقام</span>
                             <span style={{ color: /[A-Z]/.test(password) && /[0-9]/.test(password) ? '#10b981' : 'inherit' }}>• حرف عالاقل كبير</span>
                         </div>
                     </div>

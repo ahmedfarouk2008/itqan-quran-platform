@@ -8,7 +8,8 @@ import {
     ChevronLeft,
     Clock,
     Eye,
-    Save, // Import Save icon
+    Save,
+    Trash2, // Import Trash2 icon
 } from 'lucide-react';
 import { useStudents, useSessions } from '../../hooks'; // Import useSessions
 import { useToast } from '../../contexts/ToastContext'; // Import useToast
@@ -43,7 +44,7 @@ interface Student {
 // ... (imports remain the same)
 
 const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate }) => {
-    const { students: firebaseStudents, isLoading: studentsLoading, updateStudent } = useStudents();
+    const { students: firebaseStudents, isLoading: studentsLoading, updateStudent, deleteStudent } = useStudents();
     const { sessions, isLoading: sessionsLoading } = useSessions(); // Fetch sessions
     const { success, error: showError } = useToast();
     const isLoading = studentsLoading || sessionsLoading;
@@ -421,15 +422,36 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                            <div className="mt-4 flex justify-end">
-                                <button style={{ color: '#333', fontSize: '20px' }}
-                                    className="action-btn primary w-full text-center justify-center py-3 text-lg font-bold"
-                                    onClick={handleSave}
-                                >
-                                    <Save size={20} />
-                                    حفظ التغييرات
-                                </button>
+
+                                <div className="mt-4 flex justify-end">
+                                    <button style={{ color: '#333', fontSize: '20px' }}
+                                        className="action-btn primary w-full text-center justify-center py-3 text-lg font-bold"
+                                        onClick={handleSave}
+                                    >
+                                        <Save size={20} />
+                                        حفظ التغييرات
+                                    </button>
+                                </div>
+
+                                <div className="mt-4 pt-4 border-t border-red-100">
+                                    <button
+                                        className="action-btn w-full text-center justify-center py-3 text-red-600 hover:bg-red-50 border border-red-200"
+                                        onClick={async () => {
+                                            if (window.confirm('هل أنت متأكد من حذف هذا الطالب نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                                                const { error } = await deleteStudent(selectedStudent.id);
+                                                if (error) {
+                                                    showError('فشل حذف الطالب');
+                                                } else {
+                                                    success('تم حذف الطالب بنجاح');
+                                                    setSelectedStudentId(null);
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <Trash2 size={20} />
+                                        حذف الطالب نهائياً
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -448,9 +470,9 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                             </button>
                         </div>
                     </div>
-                </div>
+                </div >
             )}
-        </div>
+        </div >
     );
 };
 

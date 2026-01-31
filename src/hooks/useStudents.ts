@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db, Profile } from '../lib/firebase';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 // ==============================================
@@ -13,6 +13,7 @@ interface UseStudentsReturn {
     error: Error | null;
     refresh: () => Promise<void>;
     updateStudent: (studentId: string, updates: Partial<Profile>) => Promise<{ error: Error | null }>;
+    deleteStudent: (studentId: string) => Promise<{ error: Error | null }>;
 }
 
 export const useStudents = (): UseStudentsReturn => {
@@ -82,11 +83,30 @@ export const useStudents = (): UseStudentsReturn => {
         }
     };
 
+    const deleteStudent = async (studentId: string): Promise<{ error: Error | null }> => {
+        // 1. Optimistic Update
+        const previousStudents = [...students];
+        setStudents((prev) => prev.filter((s) => s.id !== studentId));
+
+        try {
+            // 2. Perform deletion
+            const studentRef = doc(db, 'users', studentId);
+            await deleteDoc(studentRef);
+            return { error: null };
+        } catch (err) {
+            // 3. Rollback
+            console.error('Error deleting student:', err);
+            setStudents(previousStudents);
+            return { error: err as Error };
+        }
+    };
+
     return {
         students,
         isLoading,
         error,
         refresh: fetchStudents,
         updateStudent,
+        deleteStudent,
     };
 };

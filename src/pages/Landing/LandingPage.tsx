@@ -3,6 +3,7 @@ import {
     BookOpen,
     ChevronLeft
 } from 'lucide-react';
+import quranHero from '../../assets/quran-hero.png';
 import '../../styles/pages/landing.css';
 
 // ==============================================
@@ -67,11 +68,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                             width: '100%',
                             maxWidth: '500px'
                         }}>
-                            <BookOpen
-                                size={200}
-                                color="#10B981"
-                                strokeWidth={1.5}
-                                style={{ filter: 'drop-shadow(0 10px 20px rgba(16, 185, 129, 0.2))' }}
+                            import quranHero from '../../assets/quran-hero.png';
+                            // ...
+                            <img
+                                src={quranHero}
+                                alt="القرآن الكريم"
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    filter: 'drop-shadow(0 10px 20px rgba(16, 185, 129, 0.2))'
+                                }}
                             />
                         </div>
                     </div>

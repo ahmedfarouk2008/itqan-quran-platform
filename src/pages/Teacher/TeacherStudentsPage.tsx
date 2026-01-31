@@ -11,6 +11,7 @@ import {
     Save, // Import Save icon
 } from 'lucide-react';
 import { useStudents, useSessions } from '../../hooks'; // Import useSessions
+import { useToast } from '../../contexts/ToastContext'; // Import useToast
 // UserLevel import removed
 import '../../styles/pages/teacher-students.css';
 
@@ -44,6 +45,7 @@ interface Student {
 const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate }) => {
     const { students: firebaseStudents, isLoading: studentsLoading, updateStudent } = useStudents();
     const { sessions, isLoading: sessionsLoading } = useSessions(); // Fetch sessions
+    const { success, error: showError } = useToast();
     const isLoading = studentsLoading || sessionsLoading;
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -120,7 +122,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
     // Local state for editing form
     const [editForm, setEditForm] = useState<{
         currentSurah: string;
-        currentAyah: number;
+        currentAyah: number | ''; // Allow empty string
         juz: number;
         status: 'active' | 'inactive';
         newNote: string;
@@ -144,15 +146,20 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
 
         const updates: any = {
             current_surah: editForm.currentSurah,
-            current_ayah: Number(editForm.currentAyah), // Ensure number
-            memorized_ayahs: Number(editForm.juz),      // Ensure number
+            current_ayah: Number(editForm.currentAyah) || 1, // Default to 1 if empty/invalid
+            memorized_ayahs: Number(editForm.juz),
             status: editForm.status
         };
 
-        await updateStudent(selectedStudent.id, updates);
+        const { error } = await updateStudent(selectedStudent.id, updates);
 
-        // Notes handled separately for now, or could be batched
-        // If note exists, add it
+        if (error) {
+            console.error('Failed to update student:', error);
+            showError('حدث خطأ أثناء حفظ التغييرات');
+            return; // Do not close modal
+        }
+
+        // Notes handled separately
         if (editForm.newNote.trim()) {
             const newNoteObj = { type: 'warning' as const, text: editForm.newNote, date: new Date().toISOString() };
             const updatedNotes = [...selectedStudent.teacherNotes, newNoteObj];
@@ -160,6 +167,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
             setEditForm(prev => prev ? ({ ...prev, newNote: '' }) : null);
         }
 
+        success('تم حفظ التغييرات بنجاح');
         // Close modal after save
         setSelectedStudentId(null);
     };
@@ -346,7 +354,13 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                         type="number"
                                         className="form-input w-full p-2 border rounded"
                                         value={editForm.currentAyah}
-                                        onChange={(e) => setEditForm({ ...editForm, currentAyah: parseInt(e.target.value) || 1 })}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setEditForm({
+                                                ...editForm,
+                                                currentAyah: val === '' ? '' : parseInt(val)
+                                            });
+                                        }}
                                     />
                                 </div>
                                 <div className="form-group">

@@ -8,7 +8,6 @@ import '../../styles/pages/auth.css';
 // ==============================================
 
 interface SignupPageProps {
-    selectedRole: UserRole;
     onSignup: (data: SignupData) => Promise<void>;
     onNavigateToLogin: () => void;
     onBack: () => void;
@@ -23,12 +22,12 @@ export interface SignupData {
 }
 
 const SignupPage: React.FC<SignupPageProps> = ({
-    selectedRole,
     onSignup,
     onNavigateToLogin,
     onBack
 }) => {
-    const [currentRole, setCurrentRole] = useState<UserRole>(selectedRole);
+    // Role is always STUDENT now
+    const currentRole = UserRole.STUDENT;
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
@@ -98,63 +97,13 @@ const SignupPage: React.FC<SignupPageProps> = ({
                     <span className="auth-logo-text">إتقان</span>
                 </div>
 
-                {/* Role Switcher */}
-                <div className="role-switcher" style={{
-                    display: 'flex',
-                    background: '#f3f4f6',
-                    padding: '4px',
-                    borderRadius: '12px',
-                    marginBottom: '24px',
-                    direction: 'rtl'
-                }}>
-                    <button
-                        type="button"
-                        onClick={() => setCurrentRole(UserRole.STUDENT)}
-                        style={{
-                            flex: 1,
-                            padding: '8px',
-                            border: 'none',
-                            background: currentRole === UserRole.STUDENT ? '#fff' : 'transparent',
-                            boxShadow: currentRole === UserRole.STUDENT ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                            borderRadius: '8px',
-                            color: currentRole === UserRole.STUDENT ? '#10b981' : '#6b7280',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
-                        طالب
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setCurrentRole(UserRole.TEACHER)}
-                        style={{
-                            flex: 1,
-                            padding: '8px',
-                            border: 'none',
-                            background: currentRole === UserRole.TEACHER ? '#fff' : 'transparent',
-                            boxShadow: currentRole === UserRole.TEACHER ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                            borderRadius: '8px',
-                            color: currentRole === UserRole.TEACHER ? '#10b981' : '#6b7280',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
-                        معلم
-                    </button>
-                </div>
+                {/* Role Switcher Removed - Forcing Student Role */}
 
                 {/* Title */}
                 <div className="auth-header">
                     <h1 className="auth-title">إنشاء حساب جديد</h1>
                     <p className="auth-subtitle">
-                        {currentRole === UserRole.STUDENT
-                            ? 'ابدأ رحلتك مع القرآن الكريم'
-                            : 'انضم كمعلمة وساعد الطلاب في رحلتهم'
-                        }
+                        ابدأ رحلتك مع القرآن الكريم
                     </p>
                 </div>
 

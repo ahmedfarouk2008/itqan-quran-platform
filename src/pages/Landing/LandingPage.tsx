@@ -3,7 +3,6 @@ import {
     BookOpen,
     ChevronLeft
 } from 'lucide-react';
-import { UserRole } from '../../types';
 import '../../styles/pages/landing.css';
 
 // ==============================================
@@ -12,7 +11,6 @@ import '../../styles/pages/landing.css';
 
 interface LandingPageProps {
     onGetStarted: () => void;
-    onSelectRole: (role: UserRole) => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {

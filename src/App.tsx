@@ -40,7 +40,6 @@ const AppContent: React.FC = () => {
     const { profile, isLoading, isAuthenticated, signIn, signUp, signOut, completeOnboarding } = useAuth();
     const { success, error: showError } = useToast();
     const [currentView, setCurrentView] = useState<AppView>('landing');
-    const [selectedRole, setSelectedRole] = useState<'student' | 'teacher'>('student');
     const [activeTab, setActiveTab] = useState('dashboard');
 
     // Check if user needs onboarding or should be redirected
@@ -54,12 +53,6 @@ const AppContent: React.FC = () => {
             }
         }
     }, [isAuthenticated, profile, isLoading]);
-
-    // Handle role selection from landing
-    const handleSelectRole = (role: 'student' | 'teacher') => {
-        setSelectedRole(role);
-        setCurrentView('signup');
-    };
 
     // Handle login
     const handleLogin = async (email: string, password: string) => {
@@ -128,7 +121,6 @@ const AppContent: React.FC = () => {
                 return (
                     <LandingPage
                         onGetStarted={() => setCurrentView('login')}
-                        onSelectRole={(role) => handleSelectRole(role as 'student' | 'teacher')}
                     />
                 );
 
@@ -144,7 +136,6 @@ const AppContent: React.FC = () => {
             case 'signup':
                 return (
                     <SignupPage
-                        selectedRole={selectedRole as any}
                         onSignup={handleSignup as any}
                         onNavigateToLogin={() => setCurrentView('login')}
                         onBack={() => setCurrentView('landing')}
@@ -192,7 +183,7 @@ const AppContent: React.FC = () => {
                 );
 
             default:
-                return <LandingPage onGetStarted={() => setCurrentView('login')} onSelectRole={handleSelectRole as any} />;
+                return <LandingPage onGetStarted={() => setCurrentView('login')} />;
         }
     };
 

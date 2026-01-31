@@ -32,45 +32,17 @@ export const useStudents = (): UseStudentsReturn => {
             setIsLoading(true);
             setError(null);
 
-            // Fetch sessions where this teacher is assigned
-            const sessionsQuery = query(
-                collection(db, 'sessions'),
-                where('teacher_id', '==', user.uid)
+            // Fetch all students
+            const studentsQuery = query(
+                collection(db, 'users'),
+                where('role', '==', 'student')
             );
 
-            const sessionsSnapshot = await getDocs(sessionsQuery);
-            const studentIds = new Set<string>();
-            sessionsSnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.student_id) {
-                    studentIds.add(data.student_id);
-                }
-            });
-
-            // Fetch student profiles
-            if (studentIds.size === 0) {
-                setStudents([]);
-                setIsLoading(false);
-                return;
-            }
-
-            // Firestore 'in' queries are limited to 10 items, so batch the queries
-            const studentIdsArray = Array.from(studentIds);
+            const studentsSnapshot = await getDocs(studentsQuery);
             const studentsData: Profile[] = [];
-
-            // Batch requests in groups of 10
-            for (let i = 0; i < studentIdsArray.length; i += 10) {
-                const batch = studentIdsArray.slice(i, i + 10);
-                const studentsQuery = query(
-                    collection(db, 'users'),
-                    where('__name__', 'in', batch)
-                );
-
-                const studentsSnapshot = await getDocs(studentsQuery);
-                studentsSnapshot.forEach((doc) => {
-                    studentsData.push({ ...doc.data(), id: doc.id } as Profile);
-                });
-            }
+            studentsSnapshot.forEach((doc) => {
+                studentsData.push({ ...doc.data(), id: doc.id } as Profile);
+            });
 
             setStudents(studentsData);
         } catch (err) {

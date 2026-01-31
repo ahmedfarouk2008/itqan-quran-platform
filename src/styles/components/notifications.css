@@ -10,12 +10,13 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    color: var(--color-neutral-600);
+    color: #fff;
     border-radius: 50%;
     transition: all 0.2s ease;
 }
 
-.notification-btn:hover, .notification-btn.active {
+.notification-btn:hover,
+.notification-btn.active {
     background-color: var(--color-neutral-100);
     color: var(--color-primary-600);
 }
@@ -40,7 +41,8 @@
 .notification-dropdown {
     position: absolute;
     top: 100%;
-    left: 0; 
+    right: 0 !important;
+    left: auto !important;
     /* RTL adjustments might be needed depending on context, default right-aligned logic */
     /* Assuming RTL body, left: 0 aligns to the left edge (far side for Arabic). 
        Actually for RTL, if it's on the left side of screen, 'left: 0' works. 
@@ -48,9 +50,8 @@
        Let's try a safe generic positioning or center-ish. 
     */
     /* Forcing LTR logic for positioning usually works better if parent is relative */
-    right: auto;
-    left: 0;
-    
+
+
     width: 320px;
     background-color: white;
     border-radius: var(--radius-xl);
@@ -65,7 +66,8 @@
 /* Fix for sidebar/header placement */
 @media (min-width: 768px) {
     .notification-dropdown {
-        left: 0; /* Aligns dropdown to left of button */
+        left: 0;
+        /* Aligns dropdown to left of button */
         right: auto;
     }
 }
@@ -178,7 +180,8 @@
     background-color: var(--color-primary-600);
     position: absolute;
     top: 16px;
-    left: 16px; /* RTL */
+    left: 16px;
+    /* RTL */
 }
 
 .empty-notifications {

@@ -142,15 +142,14 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
     const handleSave = async () => {
         if (!selectedStudent || !editForm) return;
 
-        const updates: any = {};
-        if (editForm.currentSurah !== selectedStudent.currentSurah) updates.current_surah = editForm.currentSurah;
-        if (editForm.currentAyah !== selectedStudent.currentAyah) updates.current_ayah = editForm.currentAyah;
-        if (editForm.juz !== selectedStudent.juz) updates.memorized_ayahs = editForm.juz;
-        if (editForm.status !== selectedStudent.status) updates.status = editForm.status;
+        const updates: any = {
+            current_surah: editForm.currentSurah,
+            current_ayah: Number(editForm.currentAyah), // Ensure number
+            memorized_ayahs: Number(editForm.juz),      // Ensure number
+            status: editForm.status
+        };
 
-        if (Object.keys(updates).length > 0) {
-            await updateStudent(selectedStudent.id, updates);
-        }
+        await updateStudent(selectedStudent.id, updates);
 
         // Notes handled separately for now, or could be batched
         // If note exists, add it

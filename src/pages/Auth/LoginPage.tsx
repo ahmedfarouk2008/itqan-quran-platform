@@ -17,17 +17,27 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [errors, setErrors] = useState<{ username?: string; password?: string; general?: string }>({});
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
+        setErrors({});
+
+        const newErrors: { username?: string; password?: string } = {};
+        if (!username.trim()) newErrors.username = 'اسم المستخدم مطلوب';
+        if (!password) newErrors.password = 'كلمة المرور مطلوبة';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
             await onLogin(username, password);
         } catch (err) {
-            setError('اسم المستخدم أو كلمة المرور غير صحيحة');
+            setErrors({ general: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         } finally {
             setIsLoading(false);
         }
@@ -58,9 +68,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
 
                 {/* Form */}
                 <form className="auth-form" onSubmit={handleSubmit}>
-                    {error && (
+                    {errors.general && (
                         <div className="auth-error">
-                            {error}
+                            {errors.general}
                         </div>
                     )}
 
@@ -71,14 +81,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
                         <input
                             id="username"
                             type="text"
-                            className="form-input"
+                            className={`form-input ${errors.username ? 'input-error' : ''}`}
                             placeholder="أدخل اسم المستخدم"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
+                            onChange={(e) => {
+                                setUsername(e.target.value);
+                                if (errors.username) setErrors({ ...errors, username: undefined });
+                            }}
                             dir="ltr"
                             autoComplete="username"
                         />
+                        {errors.username && <span className="error-message" style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>{errors.username}</span>}
                     </div>
 
                     <div className="form-group">
@@ -89,11 +102,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
                             <input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
-                                className="form-input"
+                                className={`form-input ${errors.password ? 'input-error' : ''}`}
                                 placeholder="******"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (errors.password) setErrors({ ...errors, password: undefined });
+                                }}
                                 dir="ltr"
                                 autoComplete="current-password"
                             />
@@ -106,6 +121,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
+                        {errors.password && <span className="error-message" style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>{errors.password}</span>}
                     </div>
 
                     <button

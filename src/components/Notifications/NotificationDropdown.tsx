@@ -3,7 +3,11 @@ import { Bell } from 'lucide-react';
 import { useNotifications } from '../../hooks/useNotifications';
 import '../../styles/components/notifications.css';
 
-const NotificationDropdown: React.FC = () => {
+interface NotificationDropdownProps {
+    onNavigate?: (tab: string) => void;
+}
+
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onNavigate }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -22,9 +26,23 @@ const NotificationDropdown: React.FC = () => {
 
     const handleNotificationClick = async (id: string, link?: string) => {
         await markAsRead(id);
-        if (link) {
-            window.location.hash = link; // Simple navigation for now, can be improved with router
+
+        if (link && onNavigate) {
+            // Check for keywords in the link to determine where to navigate
+            const linkLower = link.toLowerCase();
+            if (linkLower.includes('session') || linkLower.includes('meeting')) {
+                onNavigate('sessions');
+            } else if (linkLower.includes('homework') || linkLower.includes('assignment')) {
+                onNavigate('homework');
+            } else if (linkLower.includes('profile')) {
+                onNavigate('settings');
+            } else {
+                // Default fallback if just a specialized link, or maybe do nothing
+                // For now, let's try to match exact link if it matches a tab id
+                onNavigate(linkLower);
+            }
         }
+
         setIsOpen(false);
     };
 

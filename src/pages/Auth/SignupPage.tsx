@@ -34,7 +34,7 @@ const SignupPage: React.FC<SignupPageProps> = ({
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [errors, setErrors] = useState<{ name?: string; username?: string; password?: string; general?: string }>({});
 
     const passwordRequirements = [
         { label: '٨ أحرف على الأقل', met: password.length >= 8 },
@@ -43,19 +43,30 @@ const SignupPage: React.FC<SignupPageProps> = ({
 
     const isPasswordValid = passwordRequirements.every(req => req.met);
     const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-    const isUsernameValid = usernameRegex.test(username);
+
+    // We defer strict username validation to submit or blur to avoid annoying errors during typing
+    // but we can still check valid chars as they type (already handled by replace)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
+        setErrors({});
 
-        if (!isUsernameValid) {
-            setError('اسم المستخدم يجب أن يكون ٣-٢٠ حرف (إنجليزي وأرقام فقط)');
-            return;
+        const newErrors: { name?: string; username?: string; password?: string } = {};
+
+        if (!name.trim()) {
+            newErrors.name = 'الاسم مطلوب';
+        }
+
+        if (!usernameRegex.test(username)) {
+            newErrors.username = 'اسم المستخدم يجب أن يكون ٣-٢٠ حرف (إنجليزي وأرقام فقط)';
         }
 
         if (!isPasswordValid) {
-            setError('كلمة المرور ضعيفة');
+            newErrors.password = 'كلمة المرور لا تستوفي الشروط';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
@@ -71,9 +82,9 @@ const SignupPage: React.FC<SignupPageProps> = ({
             });
         } catch (err: any) {
             if (err?.message?.includes('already registered')) {
-                setError('اسم المستخدم موجود بالفعل');
+                setErrors({ username: 'اسم المستخدم موجود بالفعل' });
             } else {
-                setError('حدث خطأ، حاول مرة أخرى');
+                setErrors({ general: 'حدث خطأ، حاول مرة أخرى' });
             }
         } finally {
             setIsLoading(false);
@@ -109,9 +120,9 @@ const SignupPage: React.FC<SignupPageProps> = ({
 
                 {/* Form */}
                 <form className="auth-form" onSubmit={handleSubmit}>
-                    {error && (
+                    {errors.general && (
                         <div className="auth-error">
-                            {error}
+                            {errors.general}
                         </div>
                     )}
 
@@ -122,25 +133,33 @@ const SignupPage: React.FC<SignupPageProps> = ({
                             <input
                                 id="name"
                                 type="text"
-                                className="form-input"
+                                className={`form-input ${errors.name ? 'input-error' : ''}`}
                                 placeholder="اسمك الكامل"
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={(e) => {
+                                    setName(e.target.value);
+                                    if (errors.name) setErrors({ ...errors, name: undefined });
+                                }}
                                 required
                             />
+                            {errors.name && <span className="error-message" style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>{errors.name}</span>}
                         </div>
                         <div className="form-group">
                             <label className="form-label" htmlFor="username">اسم المستخدم</label>
                             <input
                                 id="username"
                                 type="text"
-                                className="form-input"
+                                className={`form-input ${errors.username ? 'input-error' : ''}`}
                                 placeholder="ahmed_123"
                                 value={username}
-                                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                                onChange={(e) => {
+                                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+                                    if (errors.username) setErrors({ ...errors, username: undefined });
+                                }}
                                 required
                                 dir="ltr"
                             />
+                            {errors.username && <span className="error-message" style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>{errors.username}</span>}
                         </div>
                     </div>
 
@@ -164,10 +183,13 @@ const SignupPage: React.FC<SignupPageProps> = ({
                             <input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
-                                className="form-input"
+                                className={`form-input ${errors.password ? 'input-error' : ''}`}
                                 placeholder="******"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (errors.password) setErrors({ ...errors, password: undefined });
+                                }}
                                 required
                                 dir="ltr"
                             />
@@ -180,6 +202,8 @@ const SignupPage: React.FC<SignupPageProps> = ({
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
+                        {errors.password && <span className="error-message" style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>{errors.password}</span>}
+
                         {/* Password Strength */}
                         <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.75rem', color: '#6b7280' }}>
                             <span style={{ color: password.length >= 8 ? '#10b981' : 'inherit' }}>• ٨ أحرف على الأقل وارقام</span>
@@ -190,7 +214,7 @@ const SignupPage: React.FC<SignupPageProps> = ({
                     <button
                         type="submit"
                         className="btn-primary"
-                        disabled={isLoading || !isPasswordValid || !isUsernameValid || !name}
+                        disabled={isLoading}
                     >
                         {isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
                     </button>

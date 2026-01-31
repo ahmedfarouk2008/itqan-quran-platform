@@ -82,7 +82,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                 trend: 'stable' as const,
                 joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
                 currentSurah: p.current_surah || 'لم يبدأ',
-                currentAyah: p.current_ayah ?? 1, // Use ?? to allow 0 if valid (though usually starts at 1)
+                currentAyah: p.current_ayah ?? 0, // Change default to 0
                 teacherNotes: p.teacher_notes || []
             };
         });
@@ -146,7 +146,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
 
         const updates: any = {
             current_surah: editForm.currentSurah,
-            current_ayah: editForm.currentAyah === '' ? 1 : Number(editForm.currentAyah), // Default to 1 only if empty string
+            current_ayah: editForm.currentAyah === '' ? 0 : Number(editForm.currentAyah), // Default to 0
             memorized_ayahs: Number(editForm.juz),
             status: editForm.status
         };

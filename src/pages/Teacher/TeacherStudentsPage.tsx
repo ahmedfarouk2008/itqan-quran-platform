@@ -82,7 +82,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                 trend: 'stable' as const,
                 joinedAt: p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : 'غير محدد',
                 currentSurah: p.current_surah || 'لم يبدأ',
-                currentAyah: p.current_ayah || 1,
+                currentAyah: p.current_ayah ?? 1, // Use ?? to allow 0 if valid (though usually starts at 1)
                 teacherNotes: p.teacher_notes || []
             };
         });
@@ -146,7 +146,7 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
 
         const updates: any = {
             current_surah: editForm.currentSurah,
-            current_ayah: Number(editForm.currentAyah) || 1, // Default to 1 if empty/invalid
+            current_ayah: editForm.currentAyah === '' ? 1 : Number(editForm.currentAyah), // Default to 1 only if empty string
             memorized_ayahs: Number(editForm.juz),
             status: editForm.status
         };
@@ -352,14 +352,19 @@ const TeacherStudentsPage: React.FC<TeacherStudentsPageProps> = ({ onNavigate })
                                     <label>الآية الحالية</label>
                                     <input
                                         type="number"
+                                        min="0"
                                         className="form-input w-full p-2 border rounded"
                                         value={editForm.currentAyah}
                                         onChange={(e) => {
                                             const val = e.target.value;
-                                            setEditForm({
-                                                ...editForm,
-                                                currentAyah: val === '' ? '' : parseInt(val)
-                                            });
+                                            if (val === '') {
+                                                setEditForm({ ...editForm, currentAyah: '' });
+                                            } else {
+                                                const num = parseInt(val);
+                                                if (!isNaN(num) && num >= 0) {
+                                                    setEditForm({ ...editForm, currentAyah: num });
+                                                }
+                                            }
                                         }}
                                     />
                                 </div>

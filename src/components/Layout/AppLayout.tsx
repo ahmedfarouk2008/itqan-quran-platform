@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { UserRole, User as UserType } from '../../types';
 import NotificationDropdown from '../Notifications/NotificationDropdown';
+import InstallPrompt from '../PWA/InstallPrompt';
 import '../../styles/layout.css';
 
 // ==============================================
@@ -172,6 +173,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     </button>
                 ))}
             </nav>
+
+            {/* PWA Install Prompt */}
+            <InstallPrompt />
         </div>
     );
 };

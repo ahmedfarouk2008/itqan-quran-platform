@@ -7,7 +7,7 @@
     display: flex;
     flex-direction: row-reverse;
     /* Sidebar on Right for RTL */
-    min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
     background-color: var(--color-neutral-50) !important;
     position: relative;
@@ -21,7 +21,7 @@
     right: 0;
     width: 280px;
     /* Force fixed width */
-    height: 100vh;
+    height: 100dvh;
     background-color: #064e3b !important;
     /* Primary 900 */
     color: white !important;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { TourProvider } from './contexts/TourContext';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Pages
 import LandingPage from './pages/Landing/LandingPage';
@@ -238,6 +239,7 @@ const App: React.FC = () => {
             <ToastProvider>
                 <TourProvider>
                     <AppContent />
+                    <SpeedInsights />
                 </TourProvider>
             </ToastProvider>
         </AuthProvider>

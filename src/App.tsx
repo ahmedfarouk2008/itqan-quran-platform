@@ -58,7 +58,7 @@ const AppContent: React.FC = () => {
     const handleLogin = async (email: string, password: string) => {
         const { error } = await signIn(email, password);
         if (error) {
-            showError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+            showError(error.message || 'البريد الإلكتروني أو كلمة المرور غير صحيحة');
             throw error;
         }
         success('تم تسجيل الدخول بنجاح!');

@@ -36,8 +36,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToSignup, onBa
 
         try {
             await onLogin(username, password);
-        } catch (err) {
-            setErrors({ general: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+        } catch (err: any) {
+            setErrors({ general: err.message || 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         } finally {
             setIsLoading(false);
         }

@@ -81,10 +81,10 @@ const SignupPage: React.FC<SignupPageProps> = ({
                 role: currentRole,
             });
         } catch (err: any) {
-            if (err?.message?.includes('already registered')) {
+            if (err?.message?.includes('already registered') || err?.code === 'auth/email-already-in-use') {
                 setErrors({ username: 'اسم المستخدم موجود بالفعل' });
             } else {
-                setErrors({ general: 'حدث خطأ، حاول مرة أخرى' });
+                setErrors({ general: err?.message || 'حدث خطأ، حاول مرة أخرى' });
             }
         } finally {
             setIsLoading(false);

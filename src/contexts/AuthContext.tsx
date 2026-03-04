@@ -165,7 +165,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    // Sign in existing user with username
     const signIn = async (username: string, password: string): Promise<{ error: Error | null }> => {
         try {
             setIsLoading(true);
@@ -175,16 +174,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             const userCredential = await signInWithEmailAndPassword(auth, internalEmail, password);
             if (userCredential.user) {
-                const userProfile = await fetchProfile(userCredential.user.uid);
+                let userProfile = await fetchProfile(userCredential.user.uid);
+
+                if (!userProfile) {
+                    console.log('No profile document found. Creating a default user profile to recover...');
+                    userProfile = {
+                        id: userCredential.user.uid,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        name: userCredential.user.displayName || username,
+                        email: internalEmail,
+                        phone: null,
+                        role: 'student', // default
+                        avatar_url: null,
+                        level: null,
+                        goals: null,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        bio: null,
+                        specialty: null,
+                        rating: null,
+                        status: 'active',
+                        current_surah: null,
+                        current_ayah: null,
+                        memorized_ayahs: null,
+                        teacher_notes: null,
+                        total_surahs: null
+                    };
+                    try {
+                        await setDoc(doc(db, 'users', userCredential.user.uid), userProfile);
+                    } catch (dbError) {
+                        console.error('Error creating fallback profile:', dbError);
+                        throw new Error('حدثت مشكلة في الاتصال بقاعدة البيانات. تواصل مع الدعم.');
+                    }
+                }
+
                 setProfile(userProfile);
             }
 
             return { error: null };
         } catch (error: any) {
+            // Already handled error messages or pass through
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                 return { error: new Error('اسم المستخدم أو كلمة المرور غير صحيحة') };
             }
-            return { error: error as Error };
+            return { error: error instanceof Error ? error : new Error(String(error)) };
         } finally {
             setIsLoading(false);
         }
